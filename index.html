@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blacklingo</title>
+<style>
+body { margin:0; font-family: Arial; background:#000; color:white; text-align:center; transition:background 0.5s; }
+h1,h2{margin:20px 0;}
+button{font-size:1.2em; padding:15px 30px; margin:10px; border:none; border-radius:10px; cursor:pointer; color:white; background:#333; transition:0.3s;}
+button:hover{background:#555;}
+#landing{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+#mainApp{display:none; padding:20px;}
+section{max-width:500px;margin:0 auto;text-align:left;display:none;}
+.date-item{display:flex;justify-content:space-between;align-items:center;margin:5px 0;background:#333;padding:5px 10px;border-radius:5px;}
+.date-item input[type="date"]{margin-right:10px;}
+.date-item input.tagName{flex:1;margin-right:10px;}
+.date-item button{background:#f44336;font-size:0.9em;margin-left:5px;}
+.achievement-item{margin:5px 0;font-weight:bold;}
+.earned{color:#00FF00;}
+.unearned{color:gray;}
+.home-btn{display:block;margin:20px auto;padding:10px 20px;background:#555;border-radius:10px;}
+input, select{padding:5px; margin:5px 0;}
+</style>
+</head>
+<body>
+
+<!-- Landing Screen -->
+<div id="landing">
+  <h1 id="appTitle">Blacklingo</h1>
+  <button onclick="showSection('dates-section')">My Dates</button>
+  <button onclick="showSection('background-section')">Background Color</button>
+  <button onclick="showSection('achievements')">Achievements</button>
+  <button onclick="showSection('settings-section')">Settings</button>
+  <button onclick="shareApp()">Share</button>
+</div>
+
+<!-- Main App -->
+<div id="mainApp">
+
+  <!-- Dates Section -->
+  <section id="dates-section">
+    <button class="home-btn" onclick="goHome()">🏠 Back</button>
+    <h2>My Dates/Tags</h2>
+    <input type="date" id="dateInput">
+    <input type="text" id="tagInput" placeholder="Tag name">
+    <button id="addDateBtn" style="background-color:#4CAF50;">Add Tag</button>
+    <div id="results"></div>
+  </section>
+
+  <!-- Background Section -->
+  <section id="background-section">
+    <button class="home-btn" onclick="goHome()">🏠 Back</button>
+    <h2>Background Settings</h2>
+    <input type="color" id="bgColorInput" title="Background Color">
+    <input type="file" id="bgFileInput" accept="image/*" title="Background Image">
+  </section>
+
+  <!-- Achievements Section -->
+  <section id="achievements">
+    <button class="home-btn" onclick="goHome()">🏠 Back</button>
+    <h2>Achievements</h2>
+    <ul id="badgeList"></ul>
+  </section>
+
+  <!-- Settings Section -->
+  <section id="settings-section">
+    <button class="home-btn" onclick="goHome()">🏠 Back</button>
+    <h2>Settings</h2>
+    <label>App Name: <input type="text" id="appNameInput" placeholder="Blacklingo"></label>
+    <button id="changeAppNameBtn" style="background:#4CAF50;">Change Name</button>
+    <h3>Version History</h3>
+    <ul id="historyList"></ul>
+    <button id="clearHistoryBtn" style="background:#f44336;">Clear History</button>
+  </section>
+
+  <!-- Share Section -->
+  <section id="share-section">
+    <button class="home-btn" onclick="goHome()">🏠 Back</button>
+    <h2>Share Blacklingo</h2>
+    <p>Download your data:</p>
+    <button id="downloadBtn" style="background:#2196F3;">Download My Data</button>
+    <p>Or share with someone directly:</p>
+    <button style="background:#4CAF50;" onclick="shareApp()">Share App</button>
+    <p>You can also upload someone else's data to use:</p>
+    <input type="file" id="uploadDataInput" accept=".json">
+    <button id="uploadBtn" style="background:#4CAF50;">Upload Data</button>
+  </section>
+
+</div>
+
+<script>
+// --- Landing to Sections ---
+function showSection(sectionId){
+  document.getElementById('landing').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  document.querySelectorAll("section").forEach(s=>s.style.display='none');
+  document.getElementById(sectionId).style.display='block';
+}
+function goHome(){
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('landing').style.display='flex';
+  document.querySelectorAll("section").forEach(s=>s.style.display='none');
+}
+
+// --- LocalStorage Data ---
+let dates = JSON.parse(localStorage.getItem("blacklingoDates")) || [];
+let history = JSON.parse(localStorage.getItem("blacklingoHistory")) || [];
+let badges = JSON.parse(localStorage.getItem("blacklingoBadges")) || [];
+const ACHIEVEMENTS = {1:"🥇Day 1 Starter",7:"🏅Week 1 Warrior",30:"🎖Month 1 Master",100:"🏆Century Champ",365:"👑Year 1 Hero"};
+function saveAll(){localStorage.setItem("blacklingoDates",JSON.stringify(dates));localStorage.setItem("blacklingoHistory",JSON.stringify(history));localStorage.setItem("blacklingoBadges",JSON.stringify(badges));}
+
+// --- Dates Section ---
+function updateResults(){
+  const resultsDiv=document.getElementById("results");
+  resultsDiv.innerHTML="";
+  dates.forEach((d,index)=>{
+    const div=document.createElement("div");
+    div.className="date-item";
+    div.innerHTML=`<input type="date" value="${d.date}" onchange="editDate(${index}, this.value)">
+      <input class="tagName" type="text" value="${d.tag}" placeholder="Tag name" onchange="editTag(${index}, this.value)">
+      <span>${calculateTime(d.date).days} days</span>
+      <button onclick="removeDate(${index})">Remove</button>`;
+    resultsDiv.appendChild(div);
+  });
+}
+document.getElementById("addDateBtn").addEventListener("click",()=>{
+  const val=document.getElementById("dateInput").value;
+  const tag=document.getElementById("tagInput").value || "No Tag";
+  if(!val) return alert("Select a date");
+  dates.push({date:val,tag});
+  history.push({new:`${tag} - ${val}`,time:new Date().toLocaleString()});
+  saveAll(); updateResults(); updateHistory(); updateBadges();
+  document.getElementById("dateInput").value=""; document.getElementById("tagInput").value="";
+});
+function editDate(index,val){dates[index].date=val; saveAll(); updateResults(); updateHistory();}
+function editTag(index,val){dates[index].tag=val; saveAll(); updateResults(); updateHistory();}
+function removeDate(index){dates.splice(index,1); saveAll(); updateResults(); updateHistory();}
+
+// --- Achievements ---
+function updateBadges(){const list=document.getElementById("badgeList"); list.innerHTML=""; for(const [_,badge] of Object.entries(ACHIEVEMENTS)){const li=document.createElement("li"); li.textContent=badge; li.className=badges.includes(badge)?"achievement-item earned":"achievement-item unearned"; list.appendChild(li);}}
+function checkAchievements(){ /* Optional badge logic */}
+
+// --- History ---
+function updateHistory(){const list=document.getElementById("historyList"); list.innerHTML=""; history.forEach(h=>{const li=document.createElement("li"); li.textContent=`${h.time}: ${h.old||""} → ${h.new||""}`; list.appendChild(li);});}
+
+// --- Clear History ---
+document.getElementById("clearHistoryBtn").addEventListener("click",()=>{if(confirm("Clear history?")){dates=[]; history=[]; badges=[]; saveAll(); updateResults(); updateHistory(); updateBadges();}});
+
+// --- Background ---
+document.getElementById("bgColorInput").addEventListener("input",e=>{document.body.style.backgroundImage="";document.body.style.backgroundColor=e.target.value;});
+document.getElementById("bgFileInput").addEventListener("change",e=>{const file=e.target.files[0]; if(file && file.type.startsWith("image/")){const reader=new FileReader(); reader.onload=()=>{document.body.style.backgroundImage=`url(${reader.result})`;document.body.style.backgroundSize="cover";document.body.style.backgroundRepeat="no-repeat";document.body.style.backgroundColor="";}; reader.readAsDataURL(file);}});
+
+// --- App Name ---
+document.getElementById("changeAppNameBtn").addEventListener("click",()=>{const name=document.getElementById("appNameInput").value; if(name) document.getElementById("appTitle").innerText=name;});
+
+// --- Time Calculation ---
+function calculateTime(dateStr){const d=new Date(dateStr),now=new Date();const delta=now-d;return {days:Math.floor(delta/(1000*60*60*24))};}
+
+// --- Share Section ---
+document.getElementById("downloadBtn").addEventListener("click",()=>{
+  const data = {dates,history,badges};
+  const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "blacklingo_data.json";
+  a.click();
+});
+
+document.getElementById("uploadBtn").addEventListener("click",()=>{
+  const file=document.getElementById("uploadDataInput").files[0];
+  if(!file) return alert("Select a file");
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      dates=data.dates||[]; history=data.history||[]; badges=data.badges||[];
+      saveAll(); updateResults(); updateHistory(); updateBadges(); alert("Data loaded!");
+    }catch(err){alert("Invalid file");}
+  };
+  reader.readAsText(file);
+});
+
+function shareApp(){
+  const shareData = {
+    title: 'Blacklingo',
+    text: 'Check out my Blacklingo app! You can download it and track your dates.',
+    url: window.location.href
+  };
+  if (navigator.share) {
+    navigator.share(shareData)
+      .then(() => console.log('App shared successfully'))
+      .catch((err) => console.log('Error sharing:', err));
+  } else {
+    // fallback: copy link
+    const dummy = document.createElement('input');
+    document.body.appendChild(dummy);
+    dummy.value = shareData.url;
+    dummy.select();
+    document.execCommand('copy');
+    document.body.removeChild(dummy);
+    alert('Share link copied to clipboard!');
+  }
+}
+
+// --- Initial Render ---
+updateResults(); updateBadges(); updateHistory();
+</script>
+</body>
+</html>
