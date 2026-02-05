@@ -21,6 +21,15 @@ section{max-width:500px;margin:0 auto;text-align:left;display:none;}
 .unearned{color:gray;}
 .home-btn{display:block;margin:20px auto;padding:10px 20px;background:#555;border-radius:10px;}
 input, select{padding:5px; margin:5px 0;}
+
+/* Countdown styling */
+#countdownDisplay {
+  font-size: 2em;
+  text-align: center;
+  margin-top: 20px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
 </style>
 </head>
 <body>
@@ -31,6 +40,7 @@ input, select{padding:5px; margin:5px 0;}
   <button onclick="showSection('dates-section')">My Dates</button>
   <button onclick="showSection('background-section')">Background Color</button>
   <button onclick="showSection('achievements')">Achievements</button>
+  <button onclick="showSection('countdown-section')">Countdown</button>
   <button onclick="showSection('settings-section')">Settings</button>
   <button onclick="shareApp()">Share</button>
 </div>
@@ -61,6 +71,16 @@ input, select{padding:5px; margin:5px 0;}
     <button class="home-btn" onclick="goHome()">🏠 Back</button>
     <h2>Achievements</h2>
     <ul id="badgeList"></ul>
+  </section>
+
+  <!-- Countdown Section -->
+  <section id="countdown-section">
+    <button class="home-btn" onclick="goHome()">🏠 Back</button>
+    <h2>Countdown</h2>
+    <p>Select a date to count down to:</p>
+    <input type="date" id="countdownDate">
+    <button id="startCountdownBtn" style="background:#4CAF50;">Start Countdown</button>
+    <div id="countdownDisplay"></div>
   </section>
 
   <!-- Settings Section -->
@@ -138,24 +158,97 @@ function editTag(index,val){dates[index].tag=val; saveAll(); updateResults(); up
 function removeDate(index){dates.splice(index,1); saveAll(); updateResults(); updateHistory();}
 
 // --- Achievements ---
-function updateBadges(){const list=document.getElementById("badgeList"); list.innerHTML=""; for(const [_,badge] of Object.entries(ACHIEVEMENTS)){const li=document.createElement("li"); li.textContent=badge; li.className=badges.includes(badge)?"achievement-item earned":"achievement-item unearned"; list.appendChild(li);}}
-function checkAchievements(){ /* Optional badge logic */}
+function updateBadges(){
+  const list=document.getElementById("badgeList");
+  list.innerHTML="";
+  for(const [_,badge] of Object.entries(ACHIEVEMENTS)){
+    const li=document.createElement("li");
+    li.textContent=badge;
+    li.className=badges.includes(badge)?"achievement-item earned":"achievement-item unearned";
+    list.appendChild(li);
+  }
+}
 
 // --- History ---
-function updateHistory(){const list=document.getElementById("historyList"); list.innerHTML=""; history.forEach(h=>{const li=document.createElement("li"); li.textContent=`${h.time}: ${h.old||""} → ${h.new||""}`; list.appendChild(li);});}
+function updateHistory(){
+  const list=document.getElementById("historyList");
+  list.innerHTML="";
+  history.forEach(h=>{
+    const li=document.createElement("li");
+    li.textContent=`${h.time}: ${h.old||""} → ${h.new||""}`;
+    list.appendChild(li);
+  });
+}
 
 // --- Clear History ---
-document.getElementById("clearHistoryBtn").addEventListener("click",()=>{if(confirm("Clear history?")){dates=[]; history=[]; badges=[]; saveAll(); updateResults(); updateHistory(); updateBadges();}});
+document.getElementById("clearHistoryBtn").addEventListener("click",()=>{
+  if(confirm("Clear history?")){
+    dates=[]; history=[]; badges=[];
+    saveAll(); updateResults(); updateHistory(); updateBadges();
+  }
+});
 
 // --- Background ---
-document.getElementById("bgColorInput").addEventListener("input",e=>{document.body.style.backgroundImage="";document.body.style.backgroundColor=e.target.value;});
-document.getElementById("bgFileInput").addEventListener("change",e=>{const file=e.target.files[0]; if(file && file.type.startsWith("image/")){const reader=new FileReader(); reader.onload=()=>{document.body.style.backgroundImage=`url(${reader.result})`;document.body.style.backgroundSize="cover";document.body.style.backgroundRepeat="no-repeat";document.body.style.backgroundColor="";}; reader.readAsDataURL(file);}});
+document.getElementById("bgColorInput").addEventListener("input",e=>{
+  document.body.style.backgroundImage="";
+  document.body.style.backgroundColor=e.target.value;
+});
+document.getElementById("bgFileInput").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(file && file.type.startsWith("image/")){
+    const reader=new FileReader();
+    reader.onload=()=>{
+      document.body.style.backgroundImage=`url(${reader.result})`;
+      document.body.style.backgroundSize="cover";
+      document.body.style.backgroundRepeat="no-repeat";
+      document.body.style.backgroundColor="";
+    };
+    reader.readAsDataURL(file);
+  }
+});
 
 // --- App Name ---
-document.getElementById("changeAppNameBtn").addEventListener("click",()=>{const name=document.getElementById("appNameInput").value; if(name) document.getElementById("appTitle").innerText=name;});
+document.getElementById("changeAppNameBtn").addEventListener("click",()=>{
+  const name=document.getElementById("appNameInput").value;
+  if(name) document.getElementById("appTitle").innerText=name;
+});
 
 // --- Time Calculation ---
-function calculateTime(dateStr){const d=new Date(dateStr),now=new Date();const delta=now-d;return {days:Math.floor(delta/(1000*60*60*24))};}
+function calculateTime(dateStr){
+  const d=new Date(dateStr),now=new Date();
+  const delta=now-d;
+  return {days:Math.floor(delta/(1000*60*60*24))};
+}
+
+// --- Countdown Section ---
+let countdownInterval;
+
+document.getElementById("startCountdownBtn").addEventListener("click",()=>{
+  const dateStr=document.getElementById("countdownDate").value;
+  if(!dateStr) return alert("Select a date");
+
+  const target=new Date(dateStr).getTime();
+  clearInterval(countdownInterval);
+
+  countdownInterval=setInterval(()=>{
+    const now=Date.now();
+    const diff=target-now;
+
+    if(diff <= 0){
+      document.getElementById("countdownDisplay").innerText="Time's up!";
+      clearInterval(countdownInterval);
+      return;
+    }
+
+    const days=Math.floor(diff/(1000*60*60*24));
+    const hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+    const minutes=Math.floor((diff%(1000*60*60))/(1000*60));
+    const seconds=Math.floor((diff%(1000*60))/1000);
+
+    document.getElementById("countdownDisplay").innerText =
+      `${days}d : ${hours}h : ${minutes}m : ${seconds}s`;
+  },1000);
+});
 
 // --- Share Section ---
 document.getElementById("downloadBtn").addEventListener("click",()=>{
@@ -192,7 +285,6 @@ function shareApp(){
       .then(() => console.log('App shared successfully'))
       .catch((err) => console.log('Error sharing:', err));
   } else {
-    // fallback: copy link
     const dummy = document.createElement('input');
     document.body.appendChild(dummy);
     dummy.value = shareData.url;
