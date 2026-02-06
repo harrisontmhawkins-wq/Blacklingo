@@ -1,403 +1,822 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blacklingo</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
-
-<style>
-body { margin:0; font-family: Arial; background:#000; color:white; text-align:center; transition:background 0.5s; }
-h1,h2{margin:20px 0;}
-button{font-size:1.2em; padding:15px 30px; margin:10px; border:none; border-radius:10px; cursor:pointer; color:white; background:#333; transition:0.3s;}
-button:hover{background:#555;}
-#landing{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;flex-direction:column;justify-content:center;align-items:center;}
-#mainApp{display:none; padding:20px;}
-section{max-width:500px;margin:0 auto;text-align:left;display:none;}
-.date-item{display:flex;justify-content:space-between;align-items:center;margin:5px 0;background:#333;padding:5px 10px;border-radius:5px;}
-.date-item input[type="date"]{margin-right:10px;}
-.date-item input.tagName{flex:1;margin-right:10px;}
-.date-item button{background:#f44336;font-size:0.9em;margin-left:5px;}
-.achievement-item{margin:5px 0;font-weight:bold;}
-.earned{color:#00FF00;}
-.unearned{color:gray;}
-.home-btn{display:block;margin:20px auto;padding:10px 20px;background:#555;border-radius:10px;}
-input, select{padding:5px; margin:5px 0;}
-
-/* Countdown styling */
-#countdownDisplay {
-  font-size: 2em;
-  text-align: center;
-  margin-top: 20px;
-  font-weight: bold;
-  letter-spacing: 2px;
-}
-.countdown-item {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#222;
-  padding:5px 10px;
-  border-radius:5px;
-  margin:5px 0;
-}
-.countdown-item button {
-  font-size:0.9em;
-  padding:5px 10px;
-}
-</style>
-</head>
-<body>
-
-<!-- Landing Screen -->
-<div id="landing">
-  <h1 id="appTitle">Blacklingo</h1>
-  <button onclick="showSection('dates-section')">My Dates</button>
-  <button onclick="showSection('background-section')">Background Color</button>
-  <button onclick="showSection('achievements')">Achievements</button>
-  <button onclick="showSection('countdown-section')">Countdown</button>
-  <button onclick="showSection('settings-section')">Settings</button>
-  <button onclick="showSection('share-section')">Share</button>
-</div>
-
-<!-- Main App -->
-<div id="mainApp">
-
-  <!-- Dates Section -->
-  <section id="dates-section">
-    <button class="home-btn" onclick="goHome()">🏠 Back</button>
-    <h2>My Dates/Tags</h2>
-    <input type="date" id="dateInput">
-    <input type="text" id="tagInput" placeholder="Tag name">
-    <button id="addDateBtn" style="background-color:#4CAF50;">Add Tag</button>
-    <div id="results"></div>
-  </section>
-
-  <!-- Background Section -->
-  <section id="background-section">
-    <button class="home-btn" onclick="goHome()">🏠 Back</button>
-    <h2>Background Settings</h2>
-    <input type="color" id="bgColorInput" title="Background Color">
-    <input type="file" id="bgFileInput" accept="image/*" title="Background Image">
-  </section>
-
-  <!-- Achievements Section -->
-  <section id="achievements">
-    <button class="home-btn" onclick="goHome()">🏠 Back</button>
-    <h2>Achievements</h2>
-    <ul id="badgeList"></ul>
-  </section>
-
-  <!-- Countdown Section -->
-  <section id="countdown-section">
-    <button class="home-btn" onclick="goHome()">🏠 Back</button>
-    <h2>Countdown</h2>
-    <p>Name your countdown and pick a date:</p>
-    <input type="text" id="countdownName" placeholder="Countdown name">
-    <input type="date" id="countdownDate">
-    <button id="saveCountdownBtn" style="background:#4CAF50;">Save Countdown</button>
-    <button id="startCountdownBtn" style="background:#2196F3;">Start Countdown</button>
-
-    <h3>Active Countdown</h3>
-    <div id="countdownDisplay">No countdown running</div>
-
-    <h3>Saved Countdowns</h3>
-    <div id="savedCountdowns"></div>
-  </section>
-
-  <!-- Settings Section -->
-  <section id="settings-section">
-    <button class="home-btn" onclick="goHome()">🏠 Back</button>
-    <h2>Settings</h2>
-    <label>App Name: <input type="text" id="appNameInput" placeholder="Blacklingo"></label>
-    <button id="changeAppNameBtn" style="background:#4CAF50;">Change Name</button>
-    <h3>Version History</h3>
-    <ul id="historyList"></ul>
-    <button id="clearHistoryBtn" style="background:#f44336;">Clear History</button>
-  </section>
-
-  <!-- Share Section -->
-  <section id="share-section">
-    <button class="home-btn" onclick="goHome()">🏠 Back</button>
-    <h2>Share Blacklingo</h2>
-    <p>Download your data:</p>
-    <button id="downloadBtn" style="background:#2196F3;">Download My Data</button>
-    <p>Or share with someone directly:</p>
-    <button style="background:#4CAF50;" onclick="shareApp()">Share App</button>
-    <p>You can also upload someone else's data to use:</p>
-    <input type="file" id="uploadDataInput" accept=".json">
-    <button id="uploadBtn" style="background:#4CAF50;">Upload Data</button>
-  </section>
-
-</div>
-
-<script>
-// --- Landing to Sections ---
-function showSection(sectionId){
-  document.getElementById('landing').style.display='none';
-  document.getElementById('mainApp').style.display='block';
-  document.querySelectorAll("section").forEach(s=>s.style.display='none');
-  document.getElementById(sectionId).style.display='block';
-}
-function goHome(){
-  document.getElementById('mainApp').style.display='none';
-  document.getElementById('landing').style.display='flex';
-  document.querySelectorAll("section").forEach(s=>s.style.display='none');
-}
-
-// --- LocalStorage Data ---
-let dates = JSON.parse(localStorage.getItem("blacklingoDates")) || [];
-let history = JSON.parse(localStorage.getItem("blacklingoHistory")) || [];
-let badges = JSON.parse(localStorage.getItem("blacklingoBadges")) || [];
-let savedCountdowns = JSON.parse(localStorage.getItem("blacklingoCountdowns")) || [];
-const ACHIEVEMENTS = {1:"🥇Day 1 Starter",7:"🏅Week 1 Warrior",30:"🎖Month 1 Master",100:"🏆Century Champ",365:"👑Year 1 Hero"};
-
-function saveAll(){
-  localStorage.setItem("blacklingoDates",JSON.stringify(dates));
-  localStorage.setItem("blacklingoHistory",JSON.stringify(history));
-  localStorage.setItem("blacklingoBadges",JSON.stringify(badges));
-  localStorage.setItem("blacklingoCountdowns",JSON.stringify(savedCountdowns));
-}
-
-// --- FIXED TIME CALCULATION ---
-function calculateTime(dateStr){
-  const date = new Date(dateStr);
-  const now = new Date();
-
-  const diff = date - now; // future = positive, past = negative
-  const days = Math.floor(Math.abs(diff) / (1000 * 60 * 60 * 24));
-
-  if (diff < 0) {
-    return { text: `${days} days ago`, days: -days };
-  } else if (diff > 0) {
-    return { text: `${days} days left`, days: days };
-  } else {
-    return { text: "Today", days: 0 };
-  }
-}
-
-// --- Dates Section ---
-function updateResults(){
-  const resultsDiv=document.getElementById("results");
-  resultsDiv.innerHTML="";
-  dates.forEach((d,index)=>{
-    const div=document.createElement("div");
-    div.className="date-item";
-    div.innerHTML=`<input type="date" value="${d.date}" onchange="editDate(${index}, this.value)">
-      <input class="tagName" type="text" value="${d.tag}" placeholder="Tag name" onchange="editTag(${index}, this.value)">
-      <span>${calculateTime(d.date).text}</span>
-      <button onclick="removeDate(${index})">Remove</button>`;
-    resultsDiv.appendChild(div);
-  });
-}
-
-document.getElementById("addDateBtn").addEventListener("click",()=>{
-  const val=document.getElementById("dateInput").value;
-  const tag=document.getElementById("tagInput").value || "No Tag";
-  if(!val) return alert("Select a date");
-  dates.push({date:val,tag});
-  history.push({new:`${tag} - ${val}`,time:new Date().toLocaleString()});
-  saveAll(); updateResults(); updateHistory(); updateBadges();
-  document.getElementById("dateInput").value=""; document.getElementById("tagInput").value="";
-});
-
-function editDate(index,val){dates[index].date=val; saveAll(); updateResults(); updateHistory();}
-function editTag(index,val){dates[index].tag=val; saveAll(); updateResults(); updateHistory();}
-function removeDate(index){dates.splice(index,1); saveAll(); updateResults(); updateHistory();}
-
-// --- Achievements ---
-function updateBadges(){
-  const list=document.getElementById("badgeList");
-  list.innerHTML="";
-  for(const [_,badge] of Object.entries(ACHIEVEMENTS)){
-    const li=document.createElement("li");
-    li.textContent=badge;
-    li.className=badges.includes(badge)?"achievement-item earned":"achievement-item unearned";
-    list.appendChild(li);
-  }
-}
-
-// --- History ---
-function updateHistory(){
-  const list=document.getElementById("historyList");
-  list.innerHTML="";
-  history.forEach(h=>{
-    const li=document.createElement("li");
-    li.textContent=`${h.time}: ${h.old||""} → ${h.new||""}`;
-    list.appendChild(li);
-  });
-}
-
-// --- Clear History ---
-document.getElementById("clearHistoryBtn").addEventListener("click",()=>{
-  if(confirm("Clear history?")){
-    dates=[]; history=[]; badges=[]; savedCountdowns=[];
-    saveAll(); updateResults(); updateHistory(); updateBadges(); renderSavedCountdowns();
-  }
-});
-
-// --- Background ---
-document.getElementById("bgColorInput").addEventListener("input",e=>{
-  document.body.style.backgroundImage="";
-  document.body.style.backgroundColor=e.target.value;
-});
-document.getElementById("bgFileInput").addEventListener("change",e=>{
-  const file=e.target.files[0];
-  if(file && file.type.startsWith("image/")){
-    const reader=new FileReader();
-    reader.onload=()=>{
-      document.body.style.backgroundImage=`url(${reader.result})`;
-      document.body.style.backgroundSize="cover";
-      document.body.style.backgroundRepeat="no-repeat";
-      document.body.style.backgroundColor="";
-    };
-    reader.readAsDataURL(file);
-  }
-});
-
-// --- App Name ---
-document.getElementById("changeAppNameBtn").addEventListener("click",()=>{
-  const name=document.getElementById("appNameInput").value;
-  if(name) document.getElementById("appTitle").innerText=name;
-});
-
-// --- Countdown Section ---
-let countdownInterval;
-const countdownDisplay = document.getElementById("countdownDisplay");
-
-function renderSavedCountdowns(){
-  const container = document.getElementById("savedCountdowns");
-  container.innerHTML = "";
-  if(savedCountdowns.length === 0){
-    container.innerHTML = "<p>No saved countdowns yet.</p>";
-    return;
-  }
-  savedCountdowns.forEach((c, index)=>{
-    const div = document.createElement("div");
-    div.className = "countdown-item";
-    const label = document.createElement("span");
-    label.textContent = `${c.name} – ${c.date}`;
-    const startBtn = document.createElement("button");
-    startBtn.textContent = "Start";
-    startBtn.onclick = ()=> startCountdownTo(c.date, c.name);
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "Delete";
-    deleteBtn.style.background = "#f44336";
-    deleteBtn.onclick = ()=>{
-      savedCountdowns.splice(index,1);
-      saveAll();
-      renderSavedCountdowns();
-    };
-    div.appendChild(label);
-    div.appendChild(startBtn);
-    div.appendChild(deleteBtn);
-    container.appendChild(div);
-  });
-}
-
-function startCountdownTo(dateStr, name){
-  if(!dateStr) return;
-  const target = new Date(dateStr).getTime();
-  clearInterval(countdownInterval);
-
-  countdownInterval = setInterval(()=>{
-    const now = Date.now();
-    const diff = target - now;
-
-    if(diff <= 0){
-      countdownDisplay.innerText = `${name || "Countdown"}: Time's up!`;
-      clearInterval(countdownInterval);
-      alert("Time's up!");
-      return;
+  <meta charset="UTF-8">
+  <title>Blacklingo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#050816;
+      color:#f5f5f5;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+    header{
+      padding:10px 16px;
+      background:rgba(10,10,30,0.95);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow:0 2px 10px rgba(0,0,0,0.6);
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+    #appTitle{font-weight:700;letter-spacing:0.06em;}
+    .nav-buttons button{
+      margin-left:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:none;
+      background:#1f2937;
+      color:#f9fafb;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .nav-buttons button:hover{background:#4b5563;}
+    main{flex:1;padding:16px;max-width:900px;margin:0 auto;width:100%;}
+    #landing{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:24px;
+      gap:16px;
+    }
+    #landing h1{font-size:32px;margin:0;}
+    #landing p{max-width:420px;color:#d1d5db;}
+    #landing .primary-btn{
+      padding:10px 18px;
+      border-radius:999px;
+      border:none;
+      background:linear-gradient(135deg,#22d3ee,#a855f7);
+      color:#0b1120;
+      font-weight:600;
+      cursor:pointer;
+      margin-top:8px;
+    }
+    section{display:none;margin-top:8px;}
+    h2{margin-top:0;font-size:20px;}
+    .card{
+      background:rgba(15,23,42,0.9);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.6);
+      margin-bottom:14px;
+      border:1px solid rgba(148,163,184,0.2);
+    }
+    .field-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .field-row input[type="date"],
+    .field-row input[type="text"]{
+      flex:1;
+      min-width:140px;
+      padding:6px 8px;
+      border-radius:999px;
+      border:1px solid #4b5563;
+      background:#020617;
+      color:#e5e7eb;
+      font-size:13px;
+    }
+    .field-row button{
+      padding:6px 10px;
+      border-radius:999px;
+      border:none;
+      background:#22c55e;
+      color:#022c22;
+      font-weight:600;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .field-row button:hover{background:#16a34a;}
+    .date-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px;
+      border-radius:12px;
+      background:#020617;
+      margin-bottom:6px;
+      font-size:13px;
+    }
+    .date-item input[type="date"],
+    .date-item .tagName{
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid #374151;
+      background:#020617;
+      color:#e5e7eb;
+      font-size:12px;
+    }
+    .date-item span{
+      flex:1;
+      text-align:right;
+      font-size:12px;
+      color:#e5e7eb;
+    }
+    .date-item button{
+      padding:4px 8px;
+      border-radius:999px;
+      border:none;
+      background:#ef4444;
+      color:#fef2f2;
+      cursor:pointer;
+      font-size:11px;
+    }
+    .date-item button:hover{background:#b91c1c;}
+    ul{list-style:none;padding-left:0;margin:0;}
+    .achievement-item{
+      padding:8px 10px;
+      border-radius:12px;
+      margin-bottom:6px;
+      font-size:13px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border:1px solid rgba(148,163,184,0.3);
+      background:#020617;
+    }
+    .achievement-left{display:flex;flex-direction:column;}
+    .achievement-name{font-weight:600;}
+    .achievement-rarity{font-size:11px;opacity:0.8;}
+    .rarity-common{color:#e5e7eb;}
+    .rarity-rare{color:#22d3ee;}
+    .rarity-epic{color:#f472b6;}
+    .rarity-legendary{color:#facc15;}
+    .achievement-item.unearned{opacity:0.35;filter:grayscale(0.7);}
+    .achievement-item.earned{box-shadow:0 0 18px rgba(56,189,248,0.35);}
+    .history-list li{
+      font-size:12px;
+      padding:4px 0;
+      border-bottom:1px solid rgba(31,41,55,0.8);
+    }
+    .small-btn{
+      padding:5px 9px;
+      border-radius:999px;
+      border:none;
+      background:#1f2937;
+      color:#e5e7eb;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .small-btn.danger{background:#b91c1c;}
+    .small-btn:hover{background:#4b5563;}
+    .countdown-display{
+      font-size:16px;
+      font-weight:600;
+      margin-top:8px;
+      text-align:center;
+    }
+    .countdown-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:6px 8px;
+      border-radius:10px;
+      background:#020617;
+      margin-top:6px;
+      font-size:13px;
+    }
+    .countdown-item button{
+      padding:4px 8px;
+      border-radius:999px;
+      border:none;
+      font-size:11px;
+      cursor:pointer;
+      margin-left:4px;
+    }
+    .countdown-item button:first-of-type{background:#22c55e;color:#022c22;}
+    .countdown-item button:last-of-type{background:#ef4444;color:#fef2f2;}
+    .settings-row{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:10px;
+      font-size:13px;
+    }
+    .settings-row input[type="color"]{
+      width:60px;
+      height:30px;
+      border-radius:8px;
+      border:none;
+      padding:0;
+      background:none;
+    }
+    .settings-row input[type="file"]{
+      font-size:12px;
+    }
+    .settings-row input[type="text"]{
+      padding:6px 8px;
+      border-radius:999px;
+      border:1px solid #4b5563;
+      background:#020617;
+      color:#e5e7eb;
+      font-size:13px;
+    }
+    footer{
+      padding:8px 12px;
+      font-size:11px;
+      text-align:center;
+      color:#9ca3af;
+      background:rgba(15,23,42,0.95);
+      border-top:1px solid rgba(31,41,55,0.9);
     }
 
-    const days=Math.floor(diff/(1000*60*60*24));
-    const hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-    const minutes=Math.floor((diff%(1000*60*60))/(1000*60));
-    const seconds=Math.floor((diff%(1000*60))/1000);
+    /* --- ACHIEVEMENT POPUP --- */
+    #achievementPopup{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+      pointer-events:none;
+    }
+    #achievementPopupInner{
+      min-width:260px;
+      max-width:320px;
+      background:#020617;
+      border-radius:18px;
+      padding:14px 16px;
+      border:1px solid rgba(148,163,184,0.6);
+      box-shadow:0 20px 60px rgba(0,0,0,0.9);
+      text-align:center;
+    }
+    #achievementPopupTitle{
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:#a5b4fc;
+      margin-bottom:4px;
+    }
+    #achievementPopupName{
+      font-size:17px;
+      font-weight:700;
+      margin-bottom:4px;
+    }
+    #achievementPopupRarity{
+      font-size:12px;
+      opacity:0.9;
+      margin-bottom:6px;
+    }
+    #achievementPopupDesc{
+      font-size:12px;
+      color:#e5e7eb;
+      opacity:0.9;
+    }
 
-    countdownDisplay.innerText =
-      `${name || "Countdown"}: ${days}d : ${hours}h : ${minutes}m : ${seconds}s`;
-  },1000);
-}
+    /* Neon rarity glows */
+    .popup-common{box-shadow:0 0 18px rgba(148,163,184,0.4);}
+    .popup-rare{box-shadow:0 0 22px rgba(34,211,238,0.7);}
+    .popup-epic{box-shadow:0 0 22px rgba(244,114,182,0.7);}
+    .popup-legendary{box-shadow:0 0 26px rgba(250,204,21,0.9);}
 
-document.getElementById("startCountdownBtn").addEventListener("click",()=>{
-  const dateStr=document.getElementById("countdownDate").value;
-  const name=document.getElementById("countdownName").value || "Countdown";
-  if(!dateStr) return alert("Select a date");
-  startCountdownTo(dateStr, name);
-});
+    /* Animations */
+    .anim-slide-up{animation:slideUp 0.6s ease-out;}
+    .anim-pop-in{animation:popIn 0.55s cubic-bezier(0.34,1.56,0.64,1);}
+    .anim-glow-pulse{animation:glowPulse 1.2s ease-out;}
+    .anim-confetti{animation:confetti 0.9s ease-out;}
 
-document.getElementById("saveCountdownBtn").addEventListener("click",()=>{
-  const dateStr=document.getElementById("countdownDate").value;
-  const name=document.getElementById("countdownName").value || "Countdown";
-  if(!dateStr) return alert("Select a date");
-  savedCountdowns.push({name, date:dateStr});
-  saveAll();
-  renderSavedCountdowns();
-  document.getElementById("countdownName").value = "";
-  document.getElementById("countdownDate").value = "";
-});
+    @keyframes slideUp{
+      from{transform:translateY(40px);opacity:0;}
+      to{transform:translateY(0);opacity:1;}
+    }
+    @keyframes popIn{
+      0%{transform:scale(0.4);opacity:0;}
+      60%{transform:scale(1.05);opacity:1;}
+      100%{transform:scale(1);opacity:1;}
+    }
+    @keyframes glowPulse{
+      0%{transform:scale(0.9);box-shadow:0 0 0 rgba(56,189,248,0);}
+      50%{transform:scale(1.03);box-shadow:0 0 30px rgba(56,189,248,0.9);}
+      100%{transform:scale(1);box-shadow:0 0 10px rgba(56,189,248,0.4);}
+    }
+    @keyframes confetti{
+      0%{transform:translateY(-20px) scale(0.8);opacity:0;}
+      40%{transform:translateY(0) scale(1.05);opacity:1;}
+      100%{transform:translateY(10px) scale(1);opacity:1;}
+    }
 
-// --- Share Section ---
-document.getElementById("downloadBtn").addEventListener("click",()=>{
-  const data = {dates,history,badges,savedCountdowns};
-  const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "blacklingo_data.json";
-  a.click();
-});
+    @media(max-width:600px){
+      header{padding:8px 10px;}
+      main{padding:10px;}
+      .card{padding:10px;}
+      #landing h1{font-size:26px;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div id="appTitle">Blacklingo</div>
+    <div class="nav-buttons">
+      <button onclick="goHome()">Home</button>
+      <button onclick="showSection('datesSection')">Dates</button>
+      <button onclick="showSection('countdownSection')">Countdown</button>
+      <button onclick="showSection('achievementsSection')">Achievements</button>
+      <button onclick="showSection('historySection')">History</button>
+      <button onclick="showSection('settingsSection')">Settings</button>
+      <button onclick="showSection('shareSection')">Share</button>
+    </div>
+  </header>
 
-document.getElementById("uploadBtn").addEventListener("click",()=>{
-  const file=document.getElementById("uploadDataInput").files[0];
-  if(!file) return alert("Select a file");
-  const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const data=JSON.parse(e.target.result);
-      dates=data.dates||[]; history=data.history||[]; badges=data.badges||[];
-      savedCountdowns=data.savedCountdowns||[];
-      saveAll(); updateResults(); updateHistory(); updateBadges(); renderSavedCountdowns(); alert("Data loaded!");
-    }catch(err){alert("Invalid file");}
-  };
-  reader.readAsText(file);
-});
+  <main>
+    <div id="landing">
+      <h1>Blacklingo</h1>
+      <p>Track your important dates, countdowns, and milestones — and unlock neon achievements as you go.</p>
+      <button class="primary-btn" onclick="showSection('datesSection')">Start tracking</button>
+    </div>
 
-function shareApp(){
-  const shareData = {
-    title: 'Blacklingo',
-    text: 'Check out my Blacklingo app! You can download it and track your dates.',
-    url: window.location.href
-  };
-  if (navigator.share) {
-    navigator.share(shareData)
-      .then(() => console.log('App shared successfully'))
-      .catch((err) => console.log('Error sharing:', err));
-  } else {
-    const dummy = document.createElement('input');
-    document.body.appendChild(dummy);
-    dummy.value = shareData.url;
-    dummy.select();
-    document.execCommand('copy');
-    document.body.removeChild(dummy);
-    alert('Share link copied to clipboard!');
-  }
-}
+    <div id="mainApp">
+      <!-- Dates -->
+      <section id="datesSection">
+        <div class="card">
+          <h2>My Dates</h2>
+          <div class="field-row">
+            <input type="date" id="dateInput">
+            <input type="text" id="tagInput" placeholder="Tag name (e.g. Anniversary)">
+            <button id="addDateBtn">Add</button>
+          </div>
+          <div id="results"></div>
+        </div>
+      </section>
 
-// --- Service Worker Registration ---
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js")
-    .then(() => console.log("Service Worker registered"))
-    .catch((err) => console.log("SW error:", err));
-}
+      <!-- Countdown -->
+      <section id="countdownSection">
+        <div class="card">
+          <h2>Countdown</h2>
+          <div class="field-row">
+            <input type="date" id="countdownDate">
+            <input type="text" id="countdownName" placeholder="Countdown name">
+          </div>
+          <div class="field-row">
+            <button id="startCountdownBtn">Start</button>
+            <button id="saveCountdownBtn">Save</button>
+          </div>
+          <div id="countdownDisplay" class="countdown-display">No active countdown</div>
+          <div id="savedCountdowns" style="margin-top:10px;"></div>
+        </div>
+      </section>
 
-// --- Initial Render ---
-updateResults(); updateBadges(); updateHistory(); renderSavedCountdowns();
-</script>
+      <!-- Achievements -->
+      <section id="achievementsSection">
+        <div class="card">
+          <h2>Achievements</h2>
+          <ul id="badgeList"></ul>
+        </div>
+      </section>
 
+      <!-- History -->
+      <section id="historySection">
+        <div class="card">
+          <h2>History</h2>
+          <button id="clearHistoryBtn" class="small-btn danger" style="margin-bottom:8px;">Clear all</button>
+          <ul id="historyList" class="history-list"></ul>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section id="settingsSection">
+        <div class="card">
+          <h2>Settings</h2>
+          <div class="settings-row">
+            <label>Background colour</label>
+            <input type="color" id="bgColorInput" value="#050816">
+          </div>
+          <div class="settings-row">
+            <label>Background image</label>
+            <input type="file" id="bgFileInput" accept="image/*">
+          </div>
+          <div class="settings-row">
+            <label>App name</label>
+            <input type="text" id="appNameInput" placeholder="Blacklingo">
+            <button id="changeAppNameBtn" class="small-btn">Apply</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Share -->
+      <section id="shareSection">
+        <div class="card">
+          <h2>Share & Backup</h2>
+          <div class="settings-row">
+            <button id="downloadBtn" class="small-btn">Download data</button>
+            <input type="file" id="uploadDataInput" accept="application/json">
+            <button id="uploadBtn" class="small-btn">Load data</button>
+          </div>
+          <div class="settings-row">
+            <button class="small-btn" onclick="shareApp()">Share app link</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    Blacklingo · PWA · Your dates, your milestones, your neon achievements.
+  </footer>
+
+  <!-- Achievement Popup -->
+  <div id="achievementPopup">
+    <div id="achievementPopupInner">
+      <div id="achievementPopupTitle">Achievement unlocked</div>
+      <div id="achievementPopupName"></div>
+      <div id="achievementPopupRarity"></div>
+      <div id="achievementPopupDesc"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- Navigation ---
+    function showSection(sectionId){
+      document.getElementById('landing').style.display='none';
+      document.getElementById('mainApp').style.display='block';
+      document.querySelectorAll("section").forEach(s=>s.style.display='none');
+      document.getElementById(sectionId).style.display='block';
+    }
+    function goHome(){
+      document.getElementById('mainApp').style.display='none';
+      document.getElementById('landing').style.display='flex';
+      document.querySelectorAll("section").forEach(s=>s.style.display='none');
+    }
+
+    // --- Data ---
+    let dates = JSON.parse(localStorage.getItem("blacklingoDates")) || [];
+    let history = JSON.parse(localStorage.getItem("blacklingoHistory")) || [];
+    let badges = JSON.parse(localStorage.getItem("blacklingoBadges")) || [];
+    let savedCountdowns = JSON.parse(localStorage.getItem("blacklingoCountdowns")) || [];
+
+    // Achievements with rarity + description
+    const ACHIEVEMENTS = [
+      {id:"day1", threshold:1, label:"🥇 Day 1 Starter", rarity:"common", desc:"You added your first date."},
+      {id:"week1", threshold:7, label:"🏅 Week 1 Warrior", rarity:"rare", desc:"You’ve tracked at least 7 dates."},
+      {id:"month1", threshold:30, label:"🎖 Month 1 Master", rarity:"epic", desc:"30 dates tracked. You’re committed."},
+      {id:"hundred", threshold:100, label:"🏆 Century Champ", rarity:"epic", desc:"100 dates tracked. That’s huge."},
+      {id:"year1", threshold:365, label:"👑 Year 1 Hero", rarity:"legendary", desc:"365 dates tracked. A full year of moments."},
+      {id:"countdownSaved", threshold:1, label:"⏳ Countdown Keeper", rarity:"rare", desc:"You saved your first countdown."},
+      {id:"bgChanged", threshold:1, label:"🎨 Theme Shifter", rarity:"rare", desc:"You customised your background."},
+      {id:"sharedApp", threshold:1, label:"📤 Signal Booster", rarity:"epic", desc:"You shared Blacklingo with someone."}
+    ];
+
+    function saveAll(){
+      localStorage.setItem("blacklingoDates",JSON.stringify(dates));
+      localStorage.setItem("blacklingoHistory",JSON.stringify(history));
+      localStorage.setItem("blacklingoBadges",JSON.stringify(badges));
+      localStorage.setItem("blacklingoCountdowns",JSON.stringify(savedCountdowns));
+    }
+
+    // --- Time calculation (days ago / left / today) ---
+    function calculateTime(dateStr){
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diff = date - now;
+      const days = Math.floor(Math.abs(diff) / (1000 * 60 * 60 * 24));
+      if (diff < 0) return { text: `${days} days ago`, days: -days };
+      if (diff > 0) return { text: `${days} days left`, days: days };
+      return { text: "Today", days: 0 };
+    }
+
+    // --- Achievements UI ---
+    function rarityClass(r){
+      if(r==="rare") return "rarity-rare";
+      if(r==="epic") return "rarity-epic";
+      if(r==="legendary") return "rarity-legendary";
+      return "rarity-common";
+    }
+
+    function updateBadges(){
+      const list=document.getElementById("badgeList");
+      list.innerHTML="";
+      ACHIEVEMENTS.forEach(a=>{
+        const li=document.createElement("li");
+        li.className="achievement-item " + (badges.includes(a.id) ? "earned" : "unearned");
+        const left=document.createElement("div");
+        left.className="achievement-left";
+        const name=document.createElement("span");
+        name.className="achievement-name";
+        name.textContent = badges.includes(a.id) ? a.label : "???";
+        const rarity=document.createElement("span");
+        rarity.className="achievement-rarity " + rarityClass(a.rarity);
+        rarity.textContent = a.rarity.charAt(0).toUpperCase()+a.rarity.slice(1);
+        left.appendChild(name);
+        left.appendChild(rarity);
+        const right=document.createElement("span");
+        right.style.fontSize="11px";
+        right.style.opacity="0.7";
+        right.textContent = badges.includes(a.id) ? "Unlocked" : "Locked";
+        li.appendChild(left);
+        li.appendChild(right);
+        list.appendChild(li);
+      });
+    }
+
+    // --- Animated popup ---
+    const popup = document.getElementById("achievementPopup");
+    const popupInner = document.getElementById("achievementPopupInner");
+    const popupName = document.getElementById("achievementPopupName");
+    const popupRarity = document.getElementById("achievementPopupRarity");
+    const popupDesc = document.getElementById("achievementPopupDesc");
+
+    function randomAnimationClass(){
+      const options = ["anim-slide-up","anim-pop-in","anim-glow-pulse","anim-confetti"];
+      return options[Math.floor(Math.random()*options.length)];
+    }
+
+    function popupRarityClass(r){
+      if(r==="rare") return "popup-rare";
+      if(r==="epic") return "popup-epic";
+      if(r==="legendary") return "popup-legendary";
+      return "popup-common";
+    }
+
+    function showAchievementPopup(achievement){
+      popup.style.display="flex";
+      popup.style.pointerEvents="none";
+      popupName.textContent = achievement.label;
+      popupRarity.textContent = achievement.rarity.toUpperCase();
+      popupRarity.className = popupRarityClass(achievement.rarity);
+      popupDesc.textContent = achievement.desc;
+
+      popupInner.className = "";
+      popupInner.classList.add(popupRarityClass(achievement.rarity));
+      popupInner.classList.add(randomAnimationClass());
+
+      setTimeout(()=>{
+        popup.style.display="none";
+      }, 2000);
+    }
+
+    function unlockAchievement(id){
+      if(badges.includes(id)) return;
+      badges.push(id);
+      saveAll();
+      updateBadges();
+      const ach = ACHIEVEMENTS.find(a=>a.id===id);
+      if(ach) showAchievementPopup(ach);
+    }
+
+    // --- Dates ---
+    function updateResults(){
+      const resultsDiv=document.getElementById("results");
+      resultsDiv.innerHTML="";
+      dates.forEach((d,index)=>{
+        const div=document.createElement("div");
+        div.className="date-item";
+        const t = calculateTime(d.date);
+        div.innerHTML=`<input type="date" value="${d.date}" onchange="editDate(${index}, this.value)">
+          <input class="tagName" type="text" value="${d.tag}" placeholder="Tag name" onchange="editTag(${index}, this.value)">
+          <span>${t.text}</span>
+          <button onclick="removeDate(${index})">Remove</button>`;
+        resultsDiv.appendChild(div);
+      });
+    }
+
+    document.getElementById("addDateBtn").addEventListener("click",()=>{
+      const val=document.getElementById("dateInput").value;
+      const tag=document.getElementById("tagInput").value || "No Tag";
+      if(!val) return alert("Select a date");
+      dates.push({date:val,tag});
+      history.push({new:`${tag} - ${val}`,time:new Date().toLocaleString()});
+      saveAll();
+      updateResults();
+      updateHistory();
+      checkDateAchievements();
+      document.getElementById("dateInput").value="";
+      document.getElementById("tagInput").value="";
+    });
+
+    function editDate(index,val){
+      dates[index].date=val;
+      saveAll();
+      updateResults();
+      updateHistory();
+    }
+    function editTag(index,val){
+      dates[index].tag=val;
+      saveAll();
+      updateResults();
+      updateHistory();
+    }
+    function removeDate(index){
+      dates.splice(index,1);
+      saveAll();
+      updateResults();
+      updateHistory();
+    }
+
+    function checkDateAchievements(){
+      const count = dates.length;
+      ACHIEVEMENTS.filter(a=>["day1","week1","month1","hundred","year1"].includes(a.id))
+        .forEach(a=>{
+          if(count >= a.threshold) unlockAchievement(a.id);
+        });
+    }
+
+    // --- History ---
+    function updateHistory(){
+      const list=document.getElementById("historyList");
+      list.innerHTML="";
+      history.forEach(h=>{
+        const li=document.createElement("li");
+        li.textContent=`${h.time}: ${h.old||""} → ${h.new||""}`;
+        list.appendChild(li);
+      });
+    }
+
+    document.getElementById("clearHistoryBtn").addEventListener("click",()=>{
+      if(confirm("Clear history?")){
+        dates=[]; history=[]; badges=[]; savedCountdowns=[];
+        saveAll();
+        updateResults();
+        updateHistory();
+        updateBadges();
+        renderSavedCountdowns();
+      }
+    });
+
+    // --- Background & App name ---
+    document.getElementById("bgColorInput").addEventListener("input",e=>{
+      document.body.style.backgroundImage="";
+      document.body.style.backgroundColor=e.target.value;
+      unlockAchievement("bgChanged");
+    });
+    document.getElementById("bgFileInput").addEventListener("change",e=>{
+      const file=e.target.files[0];
+      if(file && file.type.startsWith("image/")){
+        const reader=new FileReader();
+        reader.onload=()=>{
+          document.body.style.backgroundImage=`url(${reader.result})`;
+          document.body.style.backgroundSize="cover";
+          document.body.style.backgroundRepeat="no-repeat";
+          document.body.style.backgroundColor="";
+          unlockAchievement("bgChanged");
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById("changeAppNameBtn").addEventListener("click",()=>{
+      const name=document.getElementById("appNameInput").value;
+      if(name) document.getElementById("appTitle").innerText=name;
+    });
+
+    // --- Countdown ---
+    let countdownInterval;
+    const countdownDisplay = document.getElementById("countdownDisplay");
+
+    function renderSavedCountdowns(){
+      const container = document.getElementById("savedCountdowns");
+      container.innerHTML = "";
+      if(savedCountdowns.length === 0){
+        container.innerHTML = "<p style='font-size:12px;opacity:0.8;'>No saved countdowns yet.</p>";
+        return;
+      }
+      savedCountdowns.forEach((c, index)=>{
+        const div = document.createElement("div");
+        div.className = "countdown-item";
+        const label = document.createElement("span");
+        label.textContent = `${c.name} – ${c.date}`;
+        const btnWrap = document.createElement("div");
+        const startBtn = document.createElement("button");
+        startBtn.textContent = "Start";
+        startBtn.onclick = ()=> startCountdownTo(c.date, c.name);
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.onclick = ()=>{
+          savedCountdowns.splice(index,1);
+          saveAll();
+          renderSavedCountdowns();
+        };
+        btnWrap.appendChild(startBtn);
+        btnWrap.appendChild(deleteBtn);
+        div.appendChild(label);
+        div.appendChild(btnWrap);
+        container.appendChild(div);
+      });
+    }
+
+    function startCountdownTo(dateStr, name){
+      if(!dateStr) return;
+      const target = new Date(dateStr).getTime();
+      clearInterval(countdownInterval);
+
+      countdownInterval = setInterval(()=>{
+        const now = Date.now();
+        const diff = target - now;
+
+        if(diff <= 0){
+          countdownDisplay.innerText = `${name || "Countdown"}: Time's up!`;
+          clearInterval(countdownInterval);
+          alert("Time's up!");
+          return;
+        }
+
+        const days=Math.floor(diff/(1000*60*60*24));
+        const hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+        const minutes=Math.floor((diff%(1000*60*60))/(1000*60));
+        const seconds=Math.floor((diff%(1000*60))/1000);
+
+        countdownDisplay.innerText =
+          `${name || "Countdown"}: ${days}d : ${hours}h : ${minutes}m : ${seconds}s`;
+      },1000);
+    }
+
+    document.getElementById("startCountdownBtn").addEventListener("click",()=>{
+      const dateStr=document.getElementById("countdownDate").value;
+      const name=document.getElementById("countdownName").value || "Countdown";
+      if(!dateStr) return alert("Select a date");
+      startCountdownTo(dateStr, name);
+    });
+
+    document.getElementById("saveCountdownBtn").addEventListener("click",()=>{
+      const dateStr=document.getElementById("countdownDate").value;
+      const name=document.getElementById("countdownName").value || "Countdown";
+      if(!dateStr) return alert("Select a date");
+      savedCountdowns.push({name, date:dateStr});
+      saveAll();
+      renderSavedCountdowns();
+      unlockAchievement("countdownSaved");
+      document.getElementById("countdownName").value = "";
+      document.getElementById("countdownDate").value = "";
+    });
+
+    // --- Share / backup ---
+    document.getElementById("downloadBtn").addEventListener("click",()=>{
+      const data = {dates,history,badges,savedCountdowns};
+      const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "blacklingo_data.json";
+      a.click();
+    });
+
+    document.getElementById("uploadBtn").addEventListener("click",()=>{
+      const file=document.getElementById("uploadDataInput").files[0];
+      if(!file) return alert("Select a file");
+      const reader=new FileReader();
+      reader.onload=function(e){
+        try{
+          const data=JSON.parse(e.target.result);
+          dates=data.dates||[];
+          history=data.history||[];
+          badges=data.badges||[];
+          savedCountdowns=data.savedCountdowns||[];
+          saveAll();
+          updateResults();
+          updateHistory();
+          updateBadges();
+          renderSavedCountdowns();
+          alert("Data loaded!");
+        }catch(err){alert("Invalid file");}
+      };
+      reader.readAsText(file);
+    });
+
+    function shareApp(){
+      const shareData = {
+        title: 'Blacklingo',
+        text: 'Check out my Blacklingo app! Track dates, countdowns, and unlock neon achievements.',
+        url: window.location.href
+      };
+      if (navigator.share) {
+        navigator.share(shareData)
+          .then(() => {
+            unlockAchievement("sharedApp");
+          })
+          .catch(() => {});
+      } else {
+        const dummy = document.createElement('input');
+        document.body.appendChild(dummy);
+        dummy.value = shareData.url;
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+        alert('Share link copied to clipboard!');
+        unlockAchievement("sharedApp");
+      }
+    }
+
+    // --- Service worker ---
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch((err) => console.log("SW error:", err));
+    }
+
+    // --- Initial render ---
+    updateResults();
+    updateHistory();
+    updateBadges();
+    renderSavedCountdowns();
+  </script>
 </body>
 </html>
-
