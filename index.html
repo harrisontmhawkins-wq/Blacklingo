@@ -161,6 +161,23 @@ function saveAll(){
   localStorage.setItem("blacklingoCountdowns",JSON.stringify(savedCountdowns));
 }
 
+// --- FIXED TIME CALCULATION ---
+function calculateTime(dateStr){
+  const date = new Date(dateStr);
+  const now = new Date();
+
+  const diff = date - now; // future = positive, past = negative
+  const days = Math.floor(Math.abs(diff) / (1000 * 60 * 60 * 24));
+
+  if (diff < 0) {
+    return { text: `${days} days ago`, days: -days };
+  } else if (diff > 0) {
+    return { text: `${days} days left`, days: days };
+  } else {
+    return { text: "Today", days: 0 };
+  }
+}
+
 // --- Dates Section ---
 function updateResults(){
   const resultsDiv=document.getElementById("results");
@@ -170,11 +187,12 @@ function updateResults(){
     div.className="date-item";
     div.innerHTML=`<input type="date" value="${d.date}" onchange="editDate(${index}, this.value)">
       <input class="tagName" type="text" value="${d.tag}" placeholder="Tag name" onchange="editTag(${index}, this.value)">
-      <span>${calculateTime(d.date).days} days</span>
+      <span>${calculateTime(d.date).text}</span>
       <button onclick="removeDate(${index})">Remove</button>`;
     resultsDiv.appendChild(div);
   });
 }
+
 document.getElementById("addDateBtn").addEventListener("click",()=>{
   const val=document.getElementById("dateInput").value;
   const tag=document.getElementById("tagInput").value || "No Tag";
@@ -184,6 +202,7 @@ document.getElementById("addDateBtn").addEventListener("click",()=>{
   saveAll(); updateResults(); updateHistory(); updateBadges();
   document.getElementById("dateInput").value=""; document.getElementById("tagInput").value="";
 });
+
 function editDate(index,val){dates[index].date=val; saveAll(); updateResults(); updateHistory();}
 function editTag(index,val){dates[index].tag=val; saveAll(); updateResults(); updateHistory();}
 function removeDate(index){dates.splice(index,1); saveAll(); updateResults(); updateHistory();}
@@ -243,13 +262,6 @@ document.getElementById("changeAppNameBtn").addEventListener("click",()=>{
   const name=document.getElementById("appNameInput").value;
   if(name) document.getElementById("appTitle").innerText=name;
 });
-
-// --- Time Calculation ---
-function calculateTime(dateStr){
-  const d=new Date(dateStr),now=new Date();
-  const delta=now-d;
-  return {days:Math.floor(delta/(1000*60*60*24))};
-}
 
 // --- Countdown Section ---
 let countdownInterval;
@@ -385,5 +397,7 @@ if ("serviceWorker" in navigator) {
 // --- Initial Render ---
 updateResults(); updateBadges(); updateHistory(); renderSavedCountdowns();
 </script>
+
 </body>
 </html>
+
