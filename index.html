@@ -30,6 +30,19 @@ input, select{padding:5px; margin:5px 0;}
   font-weight: bold;
   letter-spacing: 2px;
 }
+.countdown-item {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#222;
+  padding:5px 10px;
+  border-radius:5px;
+  margin:5px 0;
+}
+.countdown-item button {
+  font-size:0.9em;
+  padding:5px 10px;
+}
 </style>
 </head>
 <body>
@@ -77,10 +90,17 @@ input, select{padding:5px; margin:5px 0;}
   <section id="countdown-section">
     <button class="home-btn" onclick="goHome()">🏠 Back</button>
     <h2>Countdown</h2>
-    <p>Select a date to count down to:</p>
+    <p>Name your countdown and pick a date:</p>
+    <input type="text" id="countdownName" placeholder="Countdown name">
     <input type="date" id="countdownDate">
-    <button id="startCountdownBtn" style="background:#4CAF50;">Start Countdown</button>
-    <div id="countdownDisplay"></div>
+    <button id="saveCountdownBtn" style="background:#4CAF50;">Save Countdown</button>
+    <button id="startCountdownBtn" style="background:#2196F3;">Start Countdown</button>
+
+    <h3>Active Countdown</h3>
+    <div id="countdownDisplay">No countdown running</div>
+
+    <h3>Saved Countdowns</h3>
+    <div id="savedCountdowns"></div>
   </section>
 
   <!-- Settings Section -->
@@ -127,8 +147,15 @@ function goHome(){
 let dates = JSON.parse(localStorage.getItem("blacklingoDates")) || [];
 let history = JSON.parse(localStorage.getItem("blacklingoHistory")) || [];
 let badges = JSON.parse(localStorage.getItem("blacklingoBadges")) || [];
+let savedCountdowns = JSON.parse(localStorage.getItem("blacklingoCountdowns")) || [];
 const ACHIEVEMENTS = {1:"🥇Day 1 Starter",7:"🏅Week 1 Warrior",30:"🎖Month 1 Master",100:"🏆Century Champ",365:"👑Year 1 Hero"};
-function saveAll(){localStorage.setItem("blacklingoDates",JSON.stringify(dates));localStorage.setItem("blacklingoHistory",JSON.stringify(history));localStorage.setItem("blacklingoBadges",JSON.stringify(badges));}
+
+function saveAll(){
+  localStorage.setItem("blacklingoDates",JSON.stringify(dates));
+  localStorage.setItem("blacklingoHistory",JSON.stringify(history));
+  localStorage.setItem("blacklingoBadges",JSON.stringify(badges));
+  localStorage.setItem("blacklingoCountdowns",JSON.stringify(savedCountdowns));
+}
 
 // --- Dates Section ---
 function updateResults(){
@@ -183,8 +210,8 @@ function updateHistory(){
 // --- Clear History ---
 document.getElementById("clearHistoryBtn").addEventListener("click",()=>{
   if(confirm("Clear history?")){
-    dates=[]; history=[]; badges=[];
-    saveAll(); updateResults(); updateHistory(); updateBadges();
+    dates=[]; history=[]; badges=[]; savedCountdowns=[];
+    saveAll(); updateResults(); updateHistory(); updateBadges(); renderSavedCountdowns();
   }
 });
 
@@ -222,21 +249,55 @@ function calculateTime(dateStr){
 
 // --- Countdown Section ---
 let countdownInterval;
+const countdownDisplay = document.getElementById("countdownDisplay");
 
-document.getElementById("startCountdownBtn").addEventListener("click",()=>{
-  const dateStr=document.getElementById("countdownDate").value;
-  if(!dateStr) return alert("Select a date");
+function renderSavedCountdowns(){
+  const container = document.getElementById("savedCountdowns");
+  container.innerHTML = "";
+  if(savedCountdowns.length === 0){
+    container.innerHTML = "<p>No saved countdowns yet.</p>";
+    return;
+  }
+  savedCountdowns.forEach((c, index)=>{
+    const div = document.createElement("div");
+    div.className = "countdown-item";
+    const label = document.createElement("span");
+    label.textContent = `${c.name} – ${c.date}`;
+    const startBtn = document.createElement("button");
+    startBtn.textContent = "Start";
+    startBtn.onclick = ()=> startCountdownTo(c.date, c.name);
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+    deleteBtn.style.background = "#f44336";
+    deleteBtn.onclick = ()=>{
+      savedCountdowns.splice(index,1);
+      saveAll();
+      renderSavedCountdowns();
+    };
+    div.appendChild(label);
+    div.appendChild(startBtn);
+    div.appendChild(deleteBtn);
+    container.appendChild(div);
+  });
+}
 
-  const target=new Date(dateStr).getTime();
+function startCountdownTo(dateStr, name){
+  if(!dateStr) return;
+  const target = new Date(dateStr).getTime();
   clearInterval(countdownInterval);
 
-  countdownInterval=setInterval(()=>{
-    const now=Date.now();
-    const diff=target-now;
+  countdownInterval = setInterval(()=>{
+    const now = Date.now();
+    const diff = target - now;
 
     if(diff <= 0){
-      document.getElementById("countdownDisplay").innerText="Time's up!";
+      countdownDisplay.innerText = `${name || "Countdown"}: Time's up!`;
       clearInterval(countdownInterval);
+      try {
+        const beep = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=");
+        beep.play();
+      } catch(e){}
+      alert("Time's up!");
       return;
     }
 
@@ -245,14 +306,32 @@ document.getElementById("startCountdownBtn").addEventListener("click",()=>{
     const minutes=Math.floor((diff%(1000*60*60))/(1000*60));
     const seconds=Math.floor((diff%(1000*60))/1000);
 
-    document.getElementById("countdownDisplay").innerText =
-      `${days}d : ${hours}h : ${minutes}m : ${seconds}s`;
+    countdownDisplay.innerText =
+      `${name || "Countdown"}: ${days}d : ${hours}h : ${minutes}m : ${seconds}s`;
   },1000);
+}
+
+document.getElementById("startCountdownBtn").addEventListener("click",()=>{
+  const dateStr=document.getElementById("countdownDate").value;
+  const name=document.getElementById("countdownName").value || "Countdown";
+  if(!dateStr) return alert("Select a date");
+  startCountdownTo(dateStr, name);
+});
+
+document.getElementById("saveCountdownBtn").addEventListener("click",()=>{
+  const dateStr=document.getElementById("countdownDate").value;
+  const name=document.getElementById("countdownName").value || "Countdown";
+  if(!dateStr) return alert("Select a date");
+  savedCountdowns.push({name, date:dateStr});
+  saveAll();
+  renderSavedCountdowns();
+  document.getElementById("countdownName").value = "";
+  document.getElementById("countdownDate").value = "";
 });
 
 // --- Share Section ---
 document.getElementById("downloadBtn").addEventListener("click",()=>{
-  const data = {dates,history,badges};
+  const data = {dates,history,badges,savedCountdowns};
   const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -268,7 +347,8 @@ document.getElementById("uploadBtn").addEventListener("click",()=>{
     try{
       const data=JSON.parse(e.target.result);
       dates=data.dates||[]; history=data.history||[]; badges=data.badges||[];
-      saveAll(); updateResults(); updateHistory(); updateBadges(); alert("Data loaded!");
+      savedCountdowns=data.savedCountdowns||[];
+      saveAll(); updateResults(); updateHistory(); updateBadges(); renderSavedCountdowns(); alert("Data loaded!");
     }catch(err){alert("Invalid file");}
   };
   reader.readAsText(file);
@@ -296,7 +376,7 @@ function shareApp(){
 }
 
 // --- Initial Render ---
-updateResults(); updateBadges(); updateHistory();
+updateResults(); updateBadges(); updateHistory(); renderSavedCountdowns();
 </script>
 </body>
 </html>
