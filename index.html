@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Blacklingo</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+
 <style>
 body { margin:0; font-family: Arial; background:#000; color:white; text-align:center; transition:background 0.5s; }
 h1,h2{margin:20px 0;}
@@ -55,7 +59,7 @@ input, select{padding:5px; margin:5px 0;}
   <button onclick="showSection('achievements')">Achievements</button>
   <button onclick="showSection('countdown-section')">Countdown</button>
   <button onclick="showSection('settings-section')">Settings</button>
-  <button onclick="shareApp()">Share</button>
+  <button onclick="showSection('share-section')">Share</button>
 </div>
 
 <!-- Main App -->
@@ -293,10 +297,6 @@ function startCountdownTo(dateStr, name){
     if(diff <= 0){
       countdownDisplay.innerText = `${name || "Countdown"}: Time's up!`;
       clearInterval(countdownInterval);
-      try {
-        const beep = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=");
-        beep.play();
-      } catch(e){}
       alert("Time's up!");
       return;
     }
@@ -373,6 +373,13 @@ function shareApp(){
     document.body.removeChild(dummy);
     alert('Share link copied to clipboard!');
   }
+}
+
+// --- Service Worker Registration ---
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+    .then(() => console.log("Service Worker registered"))
+    .catch((err) => console.log("SW error:", err));
 }
 
 // --- Initial Render ---
