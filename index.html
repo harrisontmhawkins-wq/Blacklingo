@@ -39,7 +39,7 @@
       top:0;
       z-index:10;
     }
-    #appTitle{font-weight:700;letter-spacing:0.06em;}
+    #appTitle{font-weight:700;letter-spacing:0.06em;cursor:pointer;}
     .nav-buttons button{
       margin-left:6px;
       padding:6px 10px;
@@ -83,7 +83,7 @@
       box-shadow:0 10px 30px rgba(0,0,0,0.6);
       margin-bottom:14px;
       border:1px solid var(--card-border);
-      transition:background 0.3s ease,border-color 0.3s ease;
+      transition:background 0.3s ease,border-color 0.3s ease,transform 0.2s ease;
     }
     .card-header{
       display:flex;
@@ -426,6 +426,168 @@
       100%{transform:translateY(10px) scale(1);opacity:1;}
     }
 
+    /* Extras neon cyber grid */
+    #extrasSection{
+      position:relative;
+      overflow:hidden;
+    }
+    .extras-grid-bg{
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(90deg, rgba(255,0,0,0.18), rgba(0,255,0,0.18), rgba(0,128,255,0.18)),
+        radial-gradient(circle at top, rgba(56,189,248,0.25), transparent 55%),
+        radial-gradient(circle at bottom, rgba(244,114,182,0.25), transparent 55%);
+      mix-blend-mode:screen;
+      opacity:0.7;
+      pointer-events:none;
+      animation:rgbGridPulse 12s infinite alternate;
+    }
+    .extras-grid-lines{
+      position:absolute;
+      inset:0;
+      background-image:
+        linear-gradient(rgba(148,163,184,0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148,163,184,0.12) 1px, transparent 1px);
+      background-size:40px 40px;
+      opacity:0.4;
+      mix-blend-mode:soft-light;
+      pointer-events:none;
+    }
+    .extras-scanlines{
+      position:absolute;
+      inset:0;
+      background-image:linear-gradient(rgba(15,23,42,0.4) 1px, transparent 1px);
+      background-size:100% 3px;
+      opacity:0.35;
+      mix-blend-mode:multiply;
+      pointer-events:none;
+      animation:scanlineMove 8s linear infinite;
+    }
+    @keyframes rgbGridPulse{
+      0%{transform:translate3d(0,0,0);}
+      50%{transform:translate3d(-10px,-10px,0);}
+      100%{transform:translate3d(10px,10px,0);}
+    }
+    @keyframes scanlineMove{
+      0%{background-position:0 0;}
+      100%{background-position:0 100%;}
+    }
+    .extras-content{
+      position:relative;
+      z-index:2;
+    }
+    .extras-row{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:12px;
+    }
+    .extras-card{
+      position:relative;
+      border-radius:18px;
+      padding:12px;
+      background:radial-gradient(circle at top left, rgba(34,211,238,0.18), transparent 55%),
+                 radial-gradient(circle at bottom right, rgba(244,114,182,0.18), transparent 55%),
+                 rgba(15,23,42,0.96);
+      border:1px solid rgba(148,163,184,0.5);
+      box-shadow:0 0 18px rgba(15,23,42,0.9);
+      overflow:hidden;
+    }
+    .extras-card::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:conic-gradient(from 180deg, rgba(56,189,248,0.0), rgba(56,189,248,0.4), rgba(244,114,182,0.0));
+      opacity:0;
+      mix-blend-mode:screen;
+      transition:opacity 0.3s ease;
+      pointer-events:none;
+    }
+    .extras-card:hover::before{
+      opacity:0.7;
+      animation:spinGlow 6s linear infinite;
+    }
+    @keyframes spinGlow{
+      0%{transform:rotate(0deg);}
+      100%{transform:rotate(360deg);}
+    }
+    .extras-card h3{
+      margin:0 0 6px 0;
+      font-size:15px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:#e5e7eb;
+    }
+    .extras-sub{
+      font-size:11px;
+      color:var(--text-muted);
+      margin-bottom:6px;
+    }
+    .extras-quote{
+      font-size:13px;
+      line-height:1.4;
+      margin-bottom:4px;
+    }
+    .extras-quote-author{
+      font-size:11px;
+      opacity:0.8;
+    }
+    .extras-mood-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:6px;
+    }
+    .mood-btn{
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      background:rgba(15,23,42,0.9);
+      color:#e5e7eb;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .mood-btn.active{
+      border-color:var(--accent);
+      box-shadow:0 0 12px rgba(34,211,238,0.7);
+    }
+    .extras-secret-input{
+      display:flex;
+      gap:6px;
+      margin-top:6px;
+    }
+    .extras-secret-input input{
+      flex:1;
+      padding:6px 8px;
+      border-radius:999px;
+      border:1px solid #4b5563;
+      background:var(--chip-bg);
+      color:#e5e7eb;
+      font-size:12px;
+    }
+    .extras-secret-input button{
+      padding:6px 10px;
+      border-radius:999px;
+      border:none;
+      background:#22c55e;
+      color:#022c22;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .extras-theme-stats{
+      font-size:12px;
+      margin-top:4px;
+    }
+    .extras-theme-stats span{
+      display:block;
+      opacity:0.9;
+    }
+    .extras-hint{
+      font-size:11px;
+      color:var(--text-muted);
+      margin-top:4px;
+    }
+
     @media(max-width:700px){
       header{padding:8px 10px;}
       main{padding:10px;}
@@ -450,13 +612,14 @@
       <button onclick="showSection('historySection')">History</button>
       <button onclick="showSection('settingsSection')">Settings</button>
       <button onclick="showSection('shareSection')">Share</button>
+      <button onclick="showSection('extrasSection')">Extras</button>
     </div>
   </header>
 
   <main>
     <div id="landing">
       <h1>Blacklingo</h1>
-      <p>Track your important dates, countdowns, and milestones — and unlock neon achievements as you go.</p>
+      <p>Track your important dates, countdowns, moods, and milestones — and unlock neon achievements as you go.</p>
       <button class="primary-btn" onclick="showSection('datesSection')">Start tracking</button>
     </div>
 
@@ -603,11 +766,86 @@
           </div>
         </div>
       </section>
+
+      <!-- Extras -->
+      <section id="extrasSection">
+        <div class="extras-grid-bg" id="extrasGridBg"></div>
+        <div class="extras-grid-lines"></div>
+        <div class="extras-scanlines"></div>
+
+        <div class="extras-content">
+          <div class="card" id="extrasMainCard">
+            <div class="card-header">
+              <h2 id="extrasTitle">Extras · Neon Grid</h2>
+              <span class="pill" id="extrasHintPill">Tap, explore, experiment…</span>
+            </div>
+
+            <div class="extras-row">
+              <!-- Daily Quote -->
+              <div class="extras-card" id="extrasQuoteCard">
+                <h3>Daily Quote</h3>
+                <div class="extras-sub">Updates once per day · Come back tomorrow</div>
+                <div class="extras-quote" id="dailyQuoteText">Loading quote…</div>
+                <div class="extras-quote-author" id="dailyQuoteAuthor"></div>
+                <div class="extras-hint">Reading quotes often may unlock something.</div>
+              </div>
+
+              <!-- Mood -->
+              <div class="extras-card" id="extrasMoodCard">
+                <h3>Today’s Mood</h3>
+                <div class="extras-sub">Pick how you feel · New dates inherit this mood</div>
+                <div id="currentMoodLabel" style="font-size:13px;margin-bottom:4px;">Current mood: None</div>
+                <div class="extras-mood-row">
+                  <button class="mood-btn" data-mood="😊 Happy">😊 Happy</button>
+                  <button class="mood-btn" data-mood="😐 Neutral">😐 Neutral</button>
+                  <button class="mood-btn" data-mood="😔 Tired">😔 Tired</button>
+                  <button class="mood-btn" data-mood="🔥 Motivated">🔥 Motivated</button>
+                  <button class="mood-btn" data-mood="🧠 Focused">🧠 Focused</button>
+                  <button class="mood-btn" data-mood="🌧 Moody">🌧 Moody</button>
+                </div>
+                <div class="extras-hint">Try changing your mood on different days.</div>
+              </div>
+
+              <!-- Secret Code -->
+              <div class="extras-card" id="extrasSecretCard">
+                <h3>Secret Console</h3>
+                <div class="extras-sub">Enter secret codes · Some are hidden in the app</div>
+                <div class="extras-secret-input">
+                  <input type="text" id="secretCodeInput" placeholder="Enter secret code">
+                  <button id="secretCodeBtn">Run</button>
+                </div>
+                <div id="secretCodeResult" style="font-size:11px;margin-top:4px;opacity:0.9;"></div>
+                <div class="extras-hint">Hint: Try something related to the app’s name.</div>
+              </div>
+
+              <!-- Theme stats / Easter egg hints -->
+              <div class="extras-card" id="extrasStatsCard">
+                <h3>Theme & Easter Stats</h3>
+                <div class="extras-sub">See how you use Blacklingo</div>
+                <div class="extras-theme-stats">
+                  <span id="themeChangesStat">Theme changes: 0</span>
+                  <span id="themeUsedStat">Themes used: –</span>
+                  <span id="moodUsedStat">Moods used: –</span>
+                  <span id="quotesViewedStat">Quotes viewed: 0</span>
+                </div>
+                <div class="extras-hint">
+                  Some secrets hide behind:
+                  <br>· Tapping the Extras title
+                  <br>· Tapping the neon grid
+                  <br>· Changing themes a lot
+                  <br>· Adding dates at unusual times
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 
   <footer>
-    Blacklingo · PWA · Your dates, your milestones, your neon achievements.
+    Blacklingo · PWA · Your dates, moods, countdowns, and neon achievements.
   </footer>
 
   <!-- Achievement Popup -->
@@ -654,6 +892,26 @@
       usedThemes: []
     };
 
+    // Mood data
+    let moodState = JSON.parse(localStorage.getItem("blacklingoMoodState")) || {
+      currentMood: null,
+      usedMoods: [],
+      moodChanges: 0
+    };
+
+    // Daily quote data
+    let quoteState = JSON.parse(localStorage.getItem("blacklingoQuoteState")) || {
+      lastDate: null,
+      quoteIndex: null,
+      views: 0
+    };
+
+    // Extras taps
+    let extrasTapState = JSON.parse(localStorage.getItem("blacklingoExtrasTaps")) || {
+      titleTaps: 0,
+      gridTaps: 0
+    };
+
     // Achievements with rarity + description
     const ACHIEVEMENTS = [
       {id:"day1", threshold:1, label:"🥇 Day 1 Starter", rarity:"common", desc:"You added your first date."},
@@ -669,7 +927,25 @@
       {id:"streak30", threshold:30, label:"💎 30-Day Streak", rarity:"epic", desc:"30 days of consistency."},
       {id:"streak100", threshold:100, label:"🌟 100-Day Streak", rarity:"legendary", desc:"100 days in a row. Unreal."},
       {id:"themeAddict", threshold:5, label:"🎭 Theme Addict", rarity:"rare", desc:"You changed themes 5 times."},
-      {id:"themeExplorer", threshold:5, label:"🌈 Theme Explorer", rarity:"epic", desc:"You tried all available themes."}
+      {id:"themeExplorer", threshold:5, label:"🌈 Theme Explorer", rarity:"epic", desc:"You tried all available themes."},
+      {id:"secretFinder", threshold:1, label:"🔮 Secret Finder", rarity:"epic", desc:"You uncovered a hidden secret."},
+      {id:"mysteryTapper", threshold:1, label:"👁 Mystery Tapper", rarity:"rare", desc:"You tapped where others wouldn’t."},
+      {id:"nightOwl", threshold:1, label:"🌙 Night Owl", rarity:"epic", desc:"You added a date at midnight."},
+      {id:"moodMaster", threshold:3, label:"😊 Mood Master", rarity:"rare", desc:"You’ve used multiple moods across days."},
+      {id:"quoteCollector", threshold:5, label:"📜 Quote Collector", rarity:"epic", desc:"You’ve viewed many daily quotes."}
+    ];
+
+    const QUOTES = [
+      {text:"Small steps every day become big changes over time.", author:"Unknown"},
+      {text:"You don’t have to feel ready to begin.", author:"Unknown"},
+      {text:"Your future self is watching what you do today.", author:"Unknown"},
+      {text:"Discipline is remembering what you want.", author:"David Campbell"},
+      {text:"You are allowed to be both a masterpiece and a work in progress.", author:"Sophia Bush"},
+      {text:"Action is the antidote to anxiety.", author:"Unknown"},
+      {text:"One day or day one. You decide.", author:"Unknown"},
+      {text:"The secret of getting ahead is getting started.", author:"Mark Twain"},
+      {text:"Done is better than perfect.", author:"Sheryl Sandberg"},
+      {text:"Your pace is valid. Your progress is real.", author:"Unknown"}
     ];
 
     function saveAll(){
@@ -679,6 +955,9 @@
       localStorage.setItem("blacklingoCountdowns",JSON.stringify(savedCountdowns));
       localStorage.setItem("blacklingoStreak",JSON.stringify(streakData));
       localStorage.setItem("blacklingoThemeState",JSON.stringify(themeState));
+      localStorage.setItem("blacklingoMoodState",JSON.stringify(moodState));
+      localStorage.setItem("blacklingoQuoteState",JSON.stringify(quoteState));
+      localStorage.setItem("blacklingoExtrasTaps",JSON.stringify(extrasTapState));
     }
 
     // --- Time calculation ---
@@ -824,7 +1103,7 @@
       if(ach) showAchievementPopup(ach);
     }
 
-    // --- Dates + filters + pinned ---
+    // --- Dates + filters + pinned + mood ---
     let currentFilter = "all";
     let currentSearch = "";
 
@@ -832,12 +1111,13 @@
       const resultsDiv=document.getElementById("results");
       resultsDiv.innerHTML="";
       const filtered = getFilteredDates();
-      filtered.forEach((d,index)=>{
+      filtered.forEach((d)=>{
         const div=document.createElement("div");
         div.className="date-item";
         const t = calculateTime(d.date);
 
         const pinnedLabel = d.pinned ? `<span class="pinned-label">Pinned</span>` : "";
+        const moodLabel = d.mood ? ` · ${d.mood}` : "";
 
         div.innerHTML=`
           <input type="date" value="${d.date}" onchange="editDate(${d.id}, this.value)">
@@ -850,7 +1130,7 @@
             <option value="school"${d.category==="school"?" selected":""}>School</option>
             <option value="personal"${d.category==="personal"?" selected":""}>Personal</option>
           </select>
-          <span class="time-label">${t.text}${pinnedLabel}</span>
+          <span class="time-label">${t.text}${moodLabel}${pinnedLabel}</span>
         `;
 
         const pinWrap = document.createElement("div");
@@ -871,28 +1151,30 @@
     }
 
     function getFilteredDates(){
-      // ensure ids
-      dates.forEach((d,i)=>{ if(d.id==null) d.id=i; if(!d.category) d.category="general"; if(d.pinned==null) d.pinned=false; if(!d.createdAt) d.createdAt=new Date().toISOString(); });
+      dates.forEach((d,i)=>{
+        if(d.id==null) d.id=i;
+        if(!d.category) d.category="general";
+        if(d.pinned==null) d.pinned=false;
+        if(!d.createdAt) d.createdAt=new Date().toISOString();
+      });
       let arr = [...dates];
 
-      // search
       if(currentSearch.trim()!==""){
         const q = currentSearch.toLowerCase();
         arr = arr.filter(d=>
           (d.tag||"").toLowerCase().includes(q) ||
           (d.category||"").toLowerCase().includes(q) ||
-          (d.date||"").toLowerCase().includes(q)
+          (d.date||"").toLowerCase().includes(q) ||
+          (d.mood||"").toLowerCase().includes(q)
         );
       }
 
-      // filter
       if(currentFilter==="pinned"){
         arr = arr.filter(d=>d.pinned);
       } else if(currentFilter!=="all"){
         arr = arr.filter(d=>d.category===currentFilter);
       }
 
-      // sort: pinned first, then by date ascending
       arr.sort((a,b)=>{
         if(a.pinned && !b.pinned) return -1;
         if(!a.pinned && b.pinned) return 1;
@@ -908,7 +1190,16 @@
       const cat=document.getElementById("categoryInput").value || "general";
       if(!val) return alert("Select a date");
       const id = dates.length ? Math.max(...dates.map(d=>d.id||0))+1 : 0;
-      dates.push({id,date:val,tag,category:cat,pinned:false,createdAt:new Date().toISOString()});
+      const newDateObj = {
+        id,
+        date:val,
+        tag,
+        category:cat,
+        pinned:false,
+        createdAt:new Date().toISOString(),
+        mood:moodState.currentMood || null
+      };
+      dates.push(newDateObj);
       history.push({new:`${tag} - ${val}`,time:new Date().toLocaleString()});
       saveAll();
       updateResults();
@@ -916,6 +1207,7 @@
       checkDateAchievements();
       updateInsights();
       updateStreak();
+      checkNightOwl(val);
       document.getElementById("dateInput").value="";
       document.getElementById("tagInput").value="";
     });
@@ -933,6 +1225,7 @@
       updateHistory();
       updateInsights();
       updateStreak();
+      checkNightOwl(val);
     }
     function editTag(id,val){
       const i=findIndexById(id);
@@ -981,6 +1274,14 @@
         });
     }
 
+    function checkNightOwl(dateStr){
+      // if user adds a date exactly at midnight local time (00:00)
+      const now = new Date();
+      if(now.getHours()===0 && now.getMinutes()===0){
+        unlockAchievement("nightOwl");
+      }
+    }
+
     // --- Insights ---
     function updateInsights(){
       const nextEl = document.getElementById("insightNext");
@@ -997,7 +1298,6 @@
       }
 
       const now = new Date();
-      // next upcoming
       const future = dates.filter(d=>new Date(d.date)>=now);
       if(future.length){
         future.sort((a,b)=>new Date(a.date)-new Date(b.date));
@@ -1008,7 +1308,6 @@
         nextEl.textContent = "No future dates";
       }
 
-      // most used tag
       const counts = {};
       dates.forEach(d=>{
         const key = (d.tag||"No Tag").toLowerCase();
@@ -1020,13 +1319,11 @@
       });
       tagEl.textContent = bestTag ? `${bestTag} (${bestCount})` : "–";
 
-      // oldest date
       const sorted = [...dates].sort((a,b)=>new Date(a.date)-new Date(b.date));
       const oldest = sorted[0];
       const tOld = calculateTime(oldest.date);
       oldestEl.textContent = `${oldest.tag} (${tOld.text})`;
 
-      // added this week
       const weekAgo = new Date(now.getTime() - 7*24*60*60*1000);
       const weekCount = dates.filter(d=>{
         if(!d.createdAt) return false;
@@ -1066,6 +1363,9 @@
         dates=[]; history=[]; badges=[]; savedCountdowns=[];
         streakData={lastActiveDate:null,currentStreak:0,bestStreak:0};
         themeState={currentTheme:"neon",changes:0,usedThemes:[]};
+        moodState={currentMood:null,usedMoods:[],moodChanges:0};
+        quoteState={lastDate:null,quoteIndex:null,views:0};
+        extrasTapState={titleTaps:0,gridTaps:0};
         saveAll();
         updateResults();
         updateHistory();
@@ -1074,6 +1374,9 @@
         renderStreak();
         updateInsights();
         applyTheme("neon",false);
+        renderMoodUI();
+        renderQuote();
+        renderExtrasStats();
       }
     });
 
@@ -1146,13 +1449,13 @@
           break;
       }
 
-      // highlight active button
       document.querySelectorAll(".theme-btn").forEach(btn=>{
         btn.classList.toggle("active", btn.getAttribute("data-theme")===theme);
       });
 
       saveAll();
       checkThemeAchievements();
+      renderExtrasStats();
     }
 
     function checkThemeAchievements(){
@@ -1281,7 +1584,7 @@
 
     // --- Share / backup ---
     document.getElementById("downloadBtn").addEventListener("click",()=>{
-      const data = {dates,history,badges,savedCountdowns,streakData,themeState};
+      const data = {dates,history,badges,savedCountdowns,streakData,themeState,moodState,quoteState,extrasTapState};
       const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -1302,6 +1605,9 @@
           savedCountdowns=data.savedCountdowns||[];
           streakData=data.streakData||streakData;
           themeState=data.themeState||themeState;
+          moodState=data.moodState||moodState;
+          quoteState=data.quoteState||quoteState;
+          extrasTapState=data.extrasTapState||extrasTapState;
           saveAll();
           updateResults();
           updateHistory();
@@ -1310,6 +1616,9 @@
           renderStreak();
           updateInsights();
           applyTheme(themeState.currentTheme || "neon", false);
+          renderMoodUI();
+          renderQuote();
+          renderExtrasStats();
           alert("Data loaded!");
         }catch(err){alert("Invalid file");}
       };
@@ -1319,7 +1628,7 @@
     function shareApp(){
       const shareData = {
         title: 'Blacklingo',
-        text: 'Check out my Blacklingo app! Track dates, countdowns, and unlock neon achievements.',
+        text: 'Check out my Blacklingo app! Track dates, moods, countdowns, and unlock neon achievements.',
         url: window.location.href
       };
       if (navigator.share) {
@@ -1340,12 +1649,143 @@
       }
     }
 
+    // --- Daily quote system ---
+    function todayDateString(){
+      return new Date().toISOString().slice(0,10);
+    }
+
+    function renderQuote(){
+      const quoteTextEl = document.getElementById("dailyQuoteText");
+      const quoteAuthorEl = document.getElementById("dailyQuoteAuthor");
+      const today = todayDateString();
+
+      if(quoteState.lastDate !== today || quoteState.quoteIndex == null){
+        const idx = Math.floor(Math.random()*QUOTES.length);
+        quoteState.lastDate = today;
+        quoteState.quoteIndex = idx;
+        saveAll();
+      }
+
+      const q = QUOTES[quoteState.quoteIndex] || QUOTES[0];
+      quoteTextEl.textContent = `"${q.text}"`;
+      quoteAuthorEl.textContent = q.author ? `— ${q.author}` : "";
+    }
+
+    function incrementQuoteViews(){
+      quoteState.views = (quoteState.views || 0) + 1;
+      saveAll();
+      renderExtrasStats();
+      if(quoteState.views >= 5){
+        unlockAchievement("quoteCollector");
+      }
+    }
+
+    // --- Mood system ---
+    function renderMoodUI(){
+      const label = document.getElementById("currentMoodLabel");
+      label.textContent = "Current mood: " + (moodState.currentMood || "None");
+      document.querySelectorAll(".mood-btn").forEach(btn=>{
+        const m = btn.getAttribute("data-mood");
+        btn.classList.toggle("active", m === moodState.currentMood);
+      });
+      renderExtrasStats();
+    }
+
+    document.querySelectorAll(".mood-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const mood = btn.getAttribute("data-mood");
+        if(moodState.currentMood !== mood){
+          moodState.currentMood = mood;
+          moodState.moodChanges = (moodState.moodChanges || 0) + 1;
+          if(!moodState.usedMoods.includes(mood)){
+            moodState.usedMoods.push(mood);
+          }
+          saveAll();
+          renderMoodUI();
+          if(moodState.usedMoods.length >= 3){
+            unlockAchievement("moodMaster");
+          }
+        }
+      });
+    });
+
+    // --- Secret console / Easter eggs ---
+    document.getElementById("secretCodeBtn").addEventListener("click",()=>{
+      const input = document.getElementById("secretCodeInput");
+      const result = document.getElementById("secretCodeResult");
+      const code = (input.value || "").trim().toUpperCase();
+      if(!code){
+        result.textContent = "Enter a code first.";
+        return;
+      }
+
+      if(code === "BLACKLINGO"){
+        result.textContent = "Secret accepted. You’ve found something special.";
+        unlockAchievement("secretFinder");
+      } else if(code === "NEON"){
+        result.textContent = "Neon mode already active. But nice try.";
+      } else if(code === "GLITCH"){
+        result.textContent = "Glitch vibes acknowledged.";
+        unlockAchievement("mysteryTapper");
+      } else {
+        result.textContent = "Unknown code. Try again.";
+      }
+      input.value = "";
+    });
+
+    // Extras title taps
+    const extrasTitle = document.getElementById("extrasTitle");
+    extrasTitle.addEventListener("click",()=>{
+      extrasTapState.titleTaps = (extrasTapState.titleTaps || 0) + 1;
+      if(extrasTapState.titleTaps === 7){
+        unlockAchievement("mysteryTapper");
+      }
+      saveAll();
+    });
+
+    // Extras grid taps
+    const extrasBg = document.getElementById("extrasGridBg");
+    extrasBg.addEventListener("click",()=>{
+      extrasTapState.gridTaps = (extrasTapState.gridTaps || 0) + 1;
+      if(extrasTapState.gridTaps === 10){
+        unlockAchievement("secretFinder");
+      }
+      saveAll();
+    });
+
+    // Quote card click = view
+    document.getElementById("extrasQuoteCard").addEventListener("click",()=>{
+      incrementQuoteViews();
+    });
+
+    // --- Extras stats ---
+    function renderExtrasStats(){
+      const themeChangesStat = document.getElementById("themeChangesStat");
+      const themeUsedStat = document.getElementById("themeUsedStat");
+      const moodUsedStat = document.getElementById("moodUsedStat");
+      const quotesViewedStat = document.getElementById("quotesViewedStat");
+
+      themeChangesStat.textContent = `Theme changes: ${themeState.changes || 0}`;
+      themeUsedStat.textContent = `Themes used: ${themeState.usedThemes && themeState.usedThemes.length ? themeState.usedThemes.join(", ") : "–"}`;
+      moodUsedStat.textContent = `Moods used: ${moodState.usedMoods && moodState.usedMoods.length ? moodState.usedMoods.join(", ") : "–"}`;
+      quotesViewedStat.textContent = `Quotes viewed: ${quoteState.views || 0}`;
+    }
+
     // --- Service worker ---
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js")
         .then(() => console.log("Service Worker registered"))
         .catch((err) => console.log("SW error:", err));
     }
+
+    // --- App title taps (extra Easter egg hook) ---
+    let appTitleTapCount = 0;
+    document.getElementById("appTitle").addEventListener("click",()=>{
+      appTitleTapCount++;
+      if(appTitleTapCount === 7){
+        unlockAchievement("mysteryTapper");
+      }
+    });
 
     // --- Initial render ---
     applyTheme(themeState.currentTheme || "neon", false);
@@ -1355,7 +1795,12 @@
     renderSavedCountdowns();
     renderStreak();
     updateInsights();
+    renderMoodUI();
+    renderQuote();
+    renderExtrasStats();
     updateStreak(); // count first open today
   </script>
 </body>
 </html>
+
+
