@@ -6,14 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="manifest" href="manifest.json">
   <style>
+    :root{
+      --bg-main:#050816;
+      --card-bg:rgba(15,23,42,0.9);
+      --card-border:rgba(148,163,184,0.2);
+      --accent:#22d3ee;
+      --accent-soft:#a855f7;
+      --text-main:#f5f5f5;
+      --text-muted:#9ca3af;
+      --chip-bg:#020617;
+      --danger:#b91c1c;
+    }
+
     body{
       margin:0;
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:#050816;
-      color:#f5f5f5;
+      background:var(--bg-main);
+      color:var(--text-main);
       display:flex;
       flex-direction:column;
       min-height:100vh;
+      transition:background 0.3s ease,color 0.3s ease;
     }
     header{
       padding:10px 16px;
@@ -55,7 +68,7 @@
       padding:10px 18px;
       border-radius:999px;
       border:none;
-      background:linear-gradient(135deg,#22d3ee,#a855f7);
+      background:linear-gradient(135deg,var(--accent),var(--accent-soft));
       color:#0b1120;
       font-weight:600;
       cursor:pointer;
@@ -64,12 +77,13 @@
     section{display:none;margin-top:8px;}
     h2{margin-top:0;font-size:20px;}
     .card{
-      background:rgba(15,23,42,0.9);
+      background:var(--card-bg);
       border-radius:16px;
       padding:14px;
       box-shadow:0 10px 30px rgba(0,0,0,0.6);
       margin-bottom:14px;
-      border:1px solid rgba(148,163,184,0.2);
+      border:1px solid var(--card-border);
+      transition:background 0.3s ease,border-color 0.3s ease;
     }
     .card-header{
       display:flex;
@@ -83,7 +97,7 @@
       font-size:11px;
       padding:3px 8px;
       border-radius:999px;
-      background:#020617;
+      background:var(--chip-bg);
       border:1px solid rgba(148,163,184,0.4);
       color:#e5e7eb;
     }
@@ -101,7 +115,7 @@
       padding:6px 8px;
       border-radius:999px;
       border:1px solid #4b5563;
-      background:#020617;
+      background:var(--chip-bg);
       color:#e5e7eb;
       font-size:13px;
     }
@@ -129,7 +143,7 @@
       padding:6px 8px;
       border-radius:999px;
       border:1px solid #4b5563;
-      background:#020617;
+      background:var(--chip-bg);
       color:#e5e7eb;
       font-size:13px;
     }
@@ -142,15 +156,15 @@
       padding:4px 9px;
       border-radius:999px;
       border:1px solid #4b5563;
-      background:#020617;
+      background:var(--chip-bg);
       color:#e5e7eb;
       font-size:11px;
       cursor:pointer;
     }
     .filter-btn.active{
-      background:#22d3ee;
+      background:var(--accent);
       color:#020617;
-      border-color:#22d3ee;
+      border-color:var(--accent);
     }
     .date-item{
       display:grid;
@@ -159,7 +173,7 @@
       align-items:center;
       padding:8px;
       border-radius:12px;
-      background:#020617;
+      background:var(--chip-bg);
       margin-bottom:6px;
       font-size:13px;
     }
@@ -169,7 +183,7 @@
       padding:4px 8px;
       border-radius:999px;
       border:1px solid #374151;
-      background:#020617;
+      background:var(--chip-bg);
       color:#e5e7eb;
       font-size:12px;
     }
@@ -215,7 +229,7 @@
       justify-content:space-between;
       align-items:center;
       border:1px solid rgba(148,163,184,0.3);
-      background:#020617;
+      background:var(--chip-bg);
     }
     .achievement-left{display:flex;flex-direction:column;}
     .achievement-name{font-weight:600;}
@@ -240,7 +254,7 @@
       font-size:12px;
       cursor:pointer;
     }
-    .small-btn.danger{background:#b91c1c;}
+    .small-btn.danger{background:var(--danger);}
     .small-btn:hover{background:#4b5563;}
     .countdown-display{
       font-size:16px;
@@ -254,7 +268,7 @@
       justify-content:space-between;
       padding:6px 8px;
       border-radius:10px;
-      background:#020617;
+      background:var(--chip-bg);
       margin-top:6px;
       font-size:13px;
     }
@@ -290,15 +304,37 @@
       padding:6px 8px;
       border-radius:999px;
       border:1px solid #4b5563;
-      background:#020617;
+      background:var(--chip-bg);
       color:#e5e7eb;
       font-size:13px;
+    }
+    .theme-buttons{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .theme-btn{
+      padding:5px 10px;
+      border-radius:999px;
+      border:1px solid #4b5563;
+      background:var(--chip-bg);
+      color:#e5e7eb;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .theme-btn.active{
+      border-color:var(--accent);
+      box-shadow:0 0 12px rgba(34,211,238,0.6);
+    }
+    .theme-note{
+      font-size:11px;
+      color:var(--text-muted);
     }
     footer{
       padding:8px 12px;
       font-size:11px;
       text-align:center;
-      color:#9ca3af;
+      color:var(--text-muted);
       background:rgba(15,23,42,0.95);
       border-top:1px solid rgba(31,41,55,0.9);
     }
@@ -314,7 +350,7 @@
     .insight-pill{
       padding:6px 8px;
       border-radius:12px;
-      background:#020617;
+      background:var(--chip-bg);
       border:1px solid rgba(148,163,184,0.3);
     }
     .insight-label{opacity:0.7;font-size:11px;}
@@ -333,7 +369,7 @@
     #achievementPopupInner{
       min-width:260px;
       max-width:320px;
-      background:#020617;
+      background:var(--chip-bg);
       border-radius:18px;
       padding:14px 16px;
       border:1px solid rgba(148,163,184,0.6);
@@ -524,8 +560,21 @@
       <section id="settingsSection">
         <div class="card">
           <h2>Settings</h2>
+
           <div class="settings-row">
-            <label>Background colour</label>
+            <label>Theme</label>
+            <div class="theme-buttons">
+              <button class="theme-btn" data-theme="neon">Neon</button>
+              <button class="theme-btn" data-theme="pastel">Pastel</button>
+              <button class="theme-btn" data-theme="dark">Dark Matte</button>
+              <button class="theme-btn" data-theme="cyberpunk">Cyberpunk</button>
+              <button class="theme-btn" data-theme="minimal">Minimal</button>
+            </div>
+            <span class="theme-note">Changing themes may unlock hidden achievements.</span>
+          </div>
+
+          <div class="settings-row">
+            <label>Background colour (overrides theme background)</label>
             <input type="color" id="bgColorInput" value="#050816">
           </div>
           <div class="settings-row">
@@ -598,6 +647,13 @@
       bestStreak: 0
     };
 
+    // Theme data
+    let themeState = JSON.parse(localStorage.getItem("blacklingoThemeState")) || {
+      currentTheme: "neon",
+      changes: 0,
+      usedThemes: []
+    };
+
     // Achievements with rarity + description
     const ACHIEVEMENTS = [
       {id:"day1", threshold:1, label:"🥇 Day 1 Starter", rarity:"common", desc:"You added your first date."},
@@ -611,7 +667,9 @@
       {id:"streak3", threshold:3, label:"🔥 3-Day Streak", rarity:"common", desc:"You’ve kept a 3-day streak."},
       {id:"streak7", threshold:7, label:"⚡ 7-Day Streak", rarity:"rare", desc:"A full week of activity."},
       {id:"streak30", threshold:30, label:"💎 30-Day Streak", rarity:"epic", desc:"30 days of consistency."},
-      {id:"streak100", threshold:100, label:"🌟 100-Day Streak", rarity:"legendary", desc:"100 days in a row. Unreal."}
+      {id:"streak100", threshold:100, label:"🌟 100-Day Streak", rarity:"legendary", desc:"100 days in a row. Unreal."},
+      {id:"themeAddict", threshold:5, label:"🎭 Theme Addict", rarity:"rare", desc:"You changed themes 5 times."},
+      {id:"themeExplorer", threshold:5, label:"🌈 Theme Explorer", rarity:"epic", desc:"You tried all available themes."}
     ];
 
     function saveAll(){
@@ -620,6 +678,7 @@
       localStorage.setItem("blacklingoBadges",JSON.stringify(badges));
       localStorage.setItem("blacklingoCountdowns",JSON.stringify(savedCountdowns));
       localStorage.setItem("blacklingoStreak",JSON.stringify(streakData));
+      localStorage.setItem("blacklingoThemeState",JSON.stringify(themeState));
     }
 
     // --- Time calculation ---
@@ -813,7 +872,7 @@
 
     function getFilteredDates(){
       // ensure ids
-      dates.forEach((d,i)=>{ if(d.id==null) d.id=i; if(!d.category) d.category="general"; if(d.pinned==null) d.pinned=false; });
+      dates.forEach((d,i)=>{ if(d.id==null) d.id=i; if(!d.category) d.category="general"; if(d.pinned==null) d.pinned=false; if(!d.createdAt) d.createdAt=new Date().toISOString(); });
       let arr = [...dates];
 
       // search
@@ -1006,6 +1065,7 @@
       if(confirm("Clear history?")){
         dates=[]; history=[]; badges=[]; savedCountdowns=[];
         streakData={lastActiveDate:null,currentStreak:0,bestStreak:0};
+        themeState={currentTheme:"neon",changes:0,usedThemes:[]};
         saveAll();
         updateResults();
         updateHistory();
@@ -1013,7 +1073,104 @@
         renderSavedCountdowns();
         renderStreak();
         updateInsights();
+        applyTheme("neon",false);
       }
+    });
+
+    // --- Theme system ---
+    function applyTheme(theme, countChange=true){
+      themeState.currentTheme = theme;
+      if(countChange){
+        themeState.changes += 1;
+      }
+      if(!themeState.usedThemes.includes(theme)){
+        themeState.usedThemes.push(theme);
+      }
+
+      const root = document.documentElement;
+      switch(theme){
+        case "pastel":
+          root.style.setProperty("--bg-main","#f9fafb");
+          root.style.setProperty("--card-bg","rgba(249,250,251,0.95)");
+          root.style.setProperty("--card-border","rgba(148,163,184,0.5)");
+          root.style.setProperty("--accent","#fb7185");
+          root.style.setProperty("--accent-soft","#a855f7");
+          root.style.setProperty("--text-main","#111827");
+          root.style.setProperty("--text-muted","#6b7280");
+          root.style.setProperty("--chip-bg","#e5e7eb");
+          root.style.setProperty("--danger","#b91c1c");
+          break;
+        case "dark":
+          root.style.setProperty("--bg-main","#020617");
+          root.style.setProperty("--card-bg","rgba(15,23,42,0.98)");
+          root.style.setProperty("--card-border","rgba(55,65,81,0.8)");
+          root.style.setProperty("--accent","#22c55e");
+          root.style.setProperty("--accent-soft","#22d3ee");
+          root.style.setProperty("--text-main","#f9fafb");
+          root.style.setProperty("--text-muted","#9ca3af");
+          root.style.setProperty("--chip-bg","#020617");
+          root.style.setProperty("--danger","#b91c1c");
+          break;
+        case "cyberpunk":
+          root.style.setProperty("--bg-main","#05010a");
+          root.style.setProperty("--card-bg","rgba(10,10,30,0.96)");
+          root.style.setProperty("--card-border","rgba(244,114,182,0.7)");
+          root.style.setProperty("--accent","#22d3ee");
+          root.style.setProperty("--accent-soft","#f472b6");
+          root.style.setProperty("--text-main","#f9fafb");
+          root.style.setProperty("--text-muted","#a5b4fc");
+          root.style.setProperty("--chip-bg","#020617");
+          root.style.setProperty("--danger","#f97316");
+          break;
+        case "minimal":
+          root.style.setProperty("--bg-main","#ffffff");
+          root.style.setProperty("--card-bg","#f9fafb");
+          root.style.setProperty("--card-border","rgba(209,213,219,1)");
+          root.style.setProperty("--accent","#0ea5e9");
+          root.style.setProperty("--accent-soft","#6366f1");
+          root.style.setProperty("--text-main","#111827");
+          root.style.setProperty("--text-muted","#6b7280");
+          root.style.setProperty("--chip-bg","#e5e7eb");
+          root.style.setProperty("--danger","#b91c1c");
+          break;
+        default: // neon
+          root.style.setProperty("--bg-main","#050816");
+          root.style.setProperty("--card-bg","rgba(15,23,42,0.9)");
+          root.style.setProperty("--card-border","rgba(148,163,184,0.2)");
+          root.style.setProperty("--accent","#22d3ee");
+          root.style.setProperty("--accent-soft","#a855f7");
+          root.style.setProperty("--text-main","#f5f5f5");
+          root.style.setProperty("--text-muted","#9ca3af");
+          root.style.setProperty("--chip-bg","#020617");
+          root.style.setProperty("--danger","#b91c1c");
+          break;
+      }
+
+      // highlight active button
+      document.querySelectorAll(".theme-btn").forEach(btn=>{
+        btn.classList.toggle("active", btn.getAttribute("data-theme")===theme);
+      });
+
+      saveAll();
+      checkThemeAchievements();
+    }
+
+    function checkThemeAchievements(){
+      if(themeState.changes >= 5){
+        unlockAchievement("themeAddict");
+      }
+      const allThemes = ["neon","pastel","dark","cyberpunk","minimal"];
+      const usedAll = allThemes.every(t=>themeState.usedThemes.includes(t));
+      if(usedAll){
+        unlockAchievement("themeExplorer");
+      }
+    }
+
+    document.querySelectorAll(".theme-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const theme = btn.getAttribute("data-theme");
+        applyTheme(theme,true);
+      });
     });
 
     // --- Background & App name ---
@@ -1124,7 +1281,7 @@
 
     // --- Share / backup ---
     document.getElementById("downloadBtn").addEventListener("click",()=>{
-      const data = {dates,history,badges,savedCountdowns,streakData};
+      const data = {dates,history,badges,savedCountdowns,streakData,themeState};
       const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -1144,6 +1301,7 @@
           badges=data.badges||[];
           savedCountdowns=data.savedCountdowns||[];
           streakData=data.streakData||streakData;
+          themeState=data.themeState||themeState;
           saveAll();
           updateResults();
           updateHistory();
@@ -1151,6 +1309,7 @@
           renderSavedCountdowns();
           renderStreak();
           updateInsights();
+          applyTheme(themeState.currentTheme || "neon", false);
           alert("Data loaded!");
         }catch(err){alert("Invalid file");}
       };
@@ -1189,6 +1348,7 @@
     }
 
     // --- Initial render ---
+    applyTheme(themeState.currentTheme || "neon", false);
     updateResults();
     updateHistory();
     updateBadges();
