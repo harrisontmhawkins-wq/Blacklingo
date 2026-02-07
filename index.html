@@ -38,7 +38,7 @@
       font-size:13px;
     }
     .nav-buttons button:hover{background:#4b5563;}
-    main{flex:1;padding:16px;max-width:900px;margin:0 auto;width:100%;}
+    main{flex:1;padding:16px;max-width:950px;margin:0 auto;width:100%;}
     #landing{
       flex:1;
       display:flex;
@@ -71,6 +71,22 @@
       margin-bottom:14px;
       border:1px solid rgba(148,163,184,0.2);
     }
+    .card-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .card-header h2{margin:0;}
+    .pill{
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      background:#020617;
+      border:1px solid rgba(148,163,184,0.4);
+      color:#e5e7eb;
+    }
     .field-row{
       display:flex;
       gap:8px;
@@ -78,9 +94,10 @@
       margin-bottom:10px;
     }
     .field-row input[type="date"],
-    .field-row input[type="text"]{
+    .field-row input[type="text"],
+    .field-row select{
       flex:1;
-      min-width:140px;
+      min-width:120px;
       padding:6px 8px;
       border-radius:999px;
       border:1px solid #4b5563;
@@ -99,10 +116,47 @@
       font-size:13px;
     }
     .field-row button:hover{background:#16a34a;}
-    .date-item{
+    .date-toolbar{
       display:flex;
-      align-items:center;
+      flex-wrap:wrap;
       gap:8px;
+      margin-bottom:8px;
+      align-items:center;
+    }
+    .date-toolbar input[type="text"]{
+      flex:2;
+      min-width:160px;
+      padding:6px 8px;
+      border-radius:999px;
+      border:1px solid #4b5563;
+      background:#020617;
+      color:#e5e7eb;
+      font-size:13px;
+    }
+    .filter-group{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .filter-btn{
+      padding:4px 9px;
+      border-radius:999px;
+      border:1px solid #4b5563;
+      background:#020617;
+      color:#e5e7eb;
+      font-size:11px;
+      cursor:pointer;
+    }
+    .filter-btn.active{
+      background:#22d3ee;
+      color:#020617;
+      border-color:#22d3ee;
+    }
+    .date-item{
+      display:grid;
+      grid-template-columns:minmax(120px,1fr) minmax(120px,1.2fr) auto auto;
+      gap:6px;
+      align-items:center;
       padding:8px;
       border-radius:12px;
       background:#020617;
@@ -110,7 +164,8 @@
       font-size:13px;
     }
     .date-item input[type="date"],
-    .date-item .tagName{
+    .date-item .tagName,
+    .date-item select{
       padding:4px 8px;
       border-radius:999px;
       border:1px solid #374151;
@@ -118,12 +173,19 @@
       color:#e5e7eb;
       font-size:12px;
     }
-    .date-item span{
-      flex:1;
-      text-align:right;
+    .date-item span.time-label{
       font-size:12px;
+      text-align:right;
       color:#e5e7eb;
     }
+    .pin-toggle{
+      font-size:11px;
+      display:flex;
+      align-items:center;
+      gap:4px;
+      justify-content:flex-end;
+    }
+    .pin-toggle input{accent-color:#facc15;}
     .date-item button{
       padding:4px 8px;
       border-radius:999px;
@@ -134,6 +196,15 @@
       font-size:11px;
     }
     .date-item button:hover{background:#b91c1c;}
+    .pinned-label{
+      font-size:10px;
+      padding:2px 6px;
+      border-radius:999px;
+      background:rgba(250,204,21,0.1);
+      border:1px solid rgba(250,204,21,0.6);
+      color:#facc15;
+      margin-left:4px;
+    }
     ul{list-style:none;padding-left:0;margin:0;}
     .achievement-item{
       padding:8px 10px;
@@ -232,7 +303,24 @@
       border-top:1px solid rgba(31,41,55,0.9);
     }
 
-    /* --- ACHIEVEMENT POPUP --- */
+    /* Insights + streak */
+    .insights-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      gap:8px;
+      margin-top:6px;
+      font-size:12px;
+    }
+    .insight-pill{
+      padding:6px 8px;
+      border-radius:12px;
+      background:#020617;
+      border:1px solid rgba(148,163,184,0.3);
+    }
+    .insight-label{opacity:0.7;font-size:11px;}
+    .insight-value{font-weight:600;margin-top:2px;}
+
+    /* Achievement popup */
     #achievementPopup{
       position:fixed;
       inset:0;
@@ -274,19 +362,14 @@
       color:#e5e7eb;
       opacity:0.9;
     }
-
-    /* Neon rarity glows */
     .popup-common{box-shadow:0 0 18px rgba(148,163,184,0.4);}
     .popup-rare{box-shadow:0 0 22px rgba(34,211,238,0.7);}
     .popup-epic{box-shadow:0 0 22px rgba(244,114,182,0.7);}
     .popup-legendary{box-shadow:0 0 26px rgba(250,204,21,0.9);}
-
-    /* Animations */
     .anim-slide-up{animation:slideUp 0.6s ease-out;}
     .anim-pop-in{animation:popIn 0.55s cubic-bezier(0.34,1.56,0.64,1);}
     .anim-glow-pulse{animation:glowPulse 1.2s ease-out;}
     .anim-confetti{animation:confetti 0.9s ease-out;}
-
     @keyframes slideUp{
       from{transform:translateY(40px);opacity:0;}
       to{transform:translateY(0);opacity:1;}
@@ -307,11 +390,16 @@
       100%{transform:translateY(10px) scale(1);opacity:1;}
     }
 
-    @media(max-width:600px){
+    @media(max-width:700px){
       header{padding:8px 10px;}
       main{padding:10px;}
       .card{padding:10px;}
       #landing h1{font-size:26px;}
+      .date-item{
+        grid-template-columns:1fr;
+        align-items:flex-start;
+      }
+      .date-item span.time-label{text-align:left;}
     }
   </style>
 </head>
@@ -340,12 +428,60 @@
       <!-- Dates -->
       <section id="datesSection">
         <div class="card">
-          <h2>My Dates</h2>
-          <div class="field-row">
+          <div class="card-header">
+            <h2>My Dates</h2>
+            <span class="pill" id="streakPill">Streak: 0 · Best: 0</span>
+          </div>
+
+          <!-- Insights -->
+          <div class="insights-grid" id="insightsGrid">
+            <div class="insight-pill">
+              <div class="insight-label">Next upcoming</div>
+              <div class="insight-value" id="insightNext">–</div>
+            </div>
+            <div class="insight-pill">
+              <div class="insight-label">Most used tag</div>
+              <div class="insight-value" id="insightTag">–</div>
+            </div>
+            <div class="insight-pill">
+              <div class="insight-label">Oldest date</div>
+              <div class="insight-value" id="insightOldest">–</div>
+            </div>
+            <div class="insight-pill">
+              <div class="insight-label">Added this week</div>
+              <div class="insight-value" id="insightWeek">0</div>
+            </div>
+          </div>
+
+          <!-- Add row -->
+          <div class="field-row" style="margin-top:10px;">
             <input type="date" id="dateInput">
             <input type="text" id="tagInput" placeholder="Tag name (e.g. Anniversary)">
+            <select id="categoryInput">
+              <option value="general">General</option>
+              <option value="birthday">Birthday</option>
+              <option value="anniversary">Anniversary</option>
+              <option value="work">Work</option>
+              <option value="school">School</option>
+              <option value="personal">Personal</option>
+            </select>
             <button id="addDateBtn">Add</button>
           </div>
+
+          <!-- Toolbar -->
+          <div class="date-toolbar">
+            <input type="text" id="searchInput" placeholder="Search by tag, category, or text">
+            <div class="filter-group">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="birthday">Birthday</button>
+              <button class="filter-btn" data-filter="anniversary">Anniversary</button>
+              <button class="filter-btn" data-filter="work">Work</button>
+              <button class="filter-btn" data-filter="school">School</button>
+              <button class="filter-btn" data-filter="personal">Personal</button>
+              <button class="filter-btn" data-filter="pinned">Pinned</button>
+            </div>
+          </div>
+
           <div id="results"></div>
         </div>
       </section>
@@ -455,6 +591,13 @@
     let badges = JSON.parse(localStorage.getItem("blacklingoBadges")) || [];
     let savedCountdowns = JSON.parse(localStorage.getItem("blacklingoCountdowns")) || [];
 
+    // Streak data
+    let streakData = JSON.parse(localStorage.getItem("blacklingoStreak")) || {
+      lastActiveDate: null,
+      currentStreak: 0,
+      bestStreak: 0
+    };
+
     // Achievements with rarity + description
     const ACHIEVEMENTS = [
       {id:"day1", threshold:1, label:"🥇 Day 1 Starter", rarity:"common", desc:"You added your first date."},
@@ -464,7 +607,11 @@
       {id:"year1", threshold:365, label:"👑 Year 1 Hero", rarity:"legendary", desc:"365 dates tracked. A full year of moments."},
       {id:"countdownSaved", threshold:1, label:"⏳ Countdown Keeper", rarity:"rare", desc:"You saved your first countdown."},
       {id:"bgChanged", threshold:1, label:"🎨 Theme Shifter", rarity:"rare", desc:"You customised your background."},
-      {id:"sharedApp", threshold:1, label:"📤 Signal Booster", rarity:"epic", desc:"You shared Blacklingo with someone."}
+      {id:"sharedApp", threshold:1, label:"📤 Signal Booster", rarity:"epic", desc:"You shared Blacklingo with someone."},
+      {id:"streak3", threshold:3, label:"🔥 3-Day Streak", rarity:"common", desc:"You’ve kept a 3-day streak."},
+      {id:"streak7", threshold:7, label:"⚡ 7-Day Streak", rarity:"rare", desc:"A full week of activity."},
+      {id:"streak30", threshold:30, label:"💎 30-Day Streak", rarity:"epic", desc:"30 days of consistency."},
+      {id:"streak100", threshold:100, label:"🌟 100-Day Streak", rarity:"legendary", desc:"100 days in a row. Unreal."}
     ];
 
     function saveAll(){
@@ -472,9 +619,10 @@
       localStorage.setItem("blacklingoHistory",JSON.stringify(history));
       localStorage.setItem("blacklingoBadges",JSON.stringify(badges));
       localStorage.setItem("blacklingoCountdowns",JSON.stringify(savedCountdowns));
+      localStorage.setItem("blacklingoStreak",JSON.stringify(streakData));
     }
 
-    // --- Time calculation (days ago / left / today) ---
+    // --- Time calculation ---
     function calculateTime(dateStr){
       const date = new Date(dateStr);
       const now = new Date();
@@ -483,6 +631,59 @@
       if (diff < 0) return { text: `${days} days ago`, days: -days };
       if (diff > 0) return { text: `${days} days left`, days: days };
       return { text: "Today", days: 0 };
+    }
+
+    // --- Streak logic ---
+    function todayKey(){
+      const d = new Date();
+      return d.toISOString().slice(0,10);
+    }
+
+    function updateStreak(){
+      const today = todayKey();
+      if(!streakData.lastActiveDate){
+        streakData.lastActiveDate = today;
+        streakData.currentStreak = 1;
+        streakData.bestStreak = 1;
+      } else {
+        if(streakData.lastActiveDate === today){
+          // already counted today
+        } else {
+          const last = new Date(streakData.lastActiveDate);
+          const now = new Date(today);
+          const diffDays = Math.round((now - last)/(1000*60*60*24));
+          if(diffDays === 1){
+            streakData.currentStreak += 1;
+          } else if(diffDays > 1){
+            streakData.currentStreak = 1;
+          }
+          streakData.lastActiveDate = today;
+          if(streakData.currentStreak > streakData.bestStreak){
+            streakData.bestStreak = streakData.currentStreak;
+          }
+        }
+      }
+      saveAll();
+      renderStreak();
+      checkStreakAchievements();
+    }
+
+    function renderStreak(){
+      const pill = document.getElementById("streakPill");
+      pill.textContent = `Streak: ${streakData.currentStreak} · Best: ${streakData.bestStreak}`;
+    }
+
+    function checkStreakAchievements(){
+      const s = streakData.currentStreak;
+      const map = [
+        {id:"streak3", threshold:3},
+        {id:"streak7", threshold:7},
+        {id:"streak30", threshold:30},
+        {id:"streak100", threshold:100}
+      ];
+      map.forEach(m=>{
+        if(s >= m.threshold) unlockAchievement(m.id);
+      });
     }
 
     // --- Achievements UI ---
@@ -519,7 +720,7 @@
       });
     }
 
-    // --- Animated popup ---
+    // --- Achievement popup ---
     const popup = document.getElementById("achievementPopup");
     const popupInner = document.getElementById("achievementPopupInner");
     const popupName = document.getElementById("achievementPopupName");
@@ -564,53 +765,153 @@
       if(ach) showAchievementPopup(ach);
     }
 
-    // --- Dates ---
+    // --- Dates + filters + pinned ---
+    let currentFilter = "all";
+    let currentSearch = "";
+
     function updateResults(){
       const resultsDiv=document.getElementById("results");
       resultsDiv.innerHTML="";
-      dates.forEach((d,index)=>{
+      const filtered = getFilteredDates();
+      filtered.forEach((d,index)=>{
         const div=document.createElement("div");
         div.className="date-item";
         const t = calculateTime(d.date);
-        div.innerHTML=`<input type="date" value="${d.date}" onchange="editDate(${index}, this.value)">
-          <input class="tagName" type="text" value="${d.tag}" placeholder="Tag name" onchange="editTag(${index}, this.value)">
-          <span>${t.text}</span>
-          <button onclick="removeDate(${index})">Remove</button>`;
+
+        const pinnedLabel = d.pinned ? `<span class="pinned-label">Pinned</span>` : "";
+
+        div.innerHTML=`
+          <input type="date" value="${d.date}" onchange="editDate(${d.id}, this.value)">
+          <input class="tagName" type="text" value="${d.tag}" placeholder="Tag name" onchange="editTag(${d.id}, this.value)">
+          <select onchange="editCategory(${d.id}, this.value)">
+            <option value="general"${d.category==="general"?" selected":""}>General</option>
+            <option value="birthday"${d.category==="birthday"?" selected":""}>Birthday</option>
+            <option value="anniversary"${d.category==="anniversary"?" selected":""}>Anniversary</option>
+            <option value="work"${d.category==="work"?" selected":""}>Work</option>
+            <option value="school"${d.category==="school"?" selected":""}>School</option>
+            <option value="personal"${d.category==="personal"?" selected":""}>Personal</option>
+          </select>
+          <span class="time-label">${t.text}${pinnedLabel}</span>
+        `;
+
+        const pinWrap = document.createElement("div");
+        pinWrap.className="pin-toggle";
+        pinWrap.innerHTML = `
+          <label>
+            <input type="checkbox" ${d.pinned ? "checked":""} onchange="togglePinned(${d.id}, this.checked)">
+            Pin
+          </label>
+          <button onclick="removeDate(${d.id})">Remove</button>
+        `;
+        div.appendChild(pinWrap);
+
         resultsDiv.appendChild(div);
       });
+
+      updateInsights();
+    }
+
+    function getFilteredDates(){
+      // ensure ids
+      dates.forEach((d,i)=>{ if(d.id==null) d.id=i; if(!d.category) d.category="general"; if(d.pinned==null) d.pinned=false; });
+      let arr = [...dates];
+
+      // search
+      if(currentSearch.trim()!==""){
+        const q = currentSearch.toLowerCase();
+        arr = arr.filter(d=>
+          (d.tag||"").toLowerCase().includes(q) ||
+          (d.category||"").toLowerCase().includes(q) ||
+          (d.date||"").toLowerCase().includes(q)
+        );
+      }
+
+      // filter
+      if(currentFilter==="pinned"){
+        arr = arr.filter(d=>d.pinned);
+      } else if(currentFilter!=="all"){
+        arr = arr.filter(d=>d.category===currentFilter);
+      }
+
+      // sort: pinned first, then by date ascending
+      arr.sort((a,b)=>{
+        if(a.pinned && !b.pinned) return -1;
+        if(!a.pinned && b.pinned) return 1;
+        return new Date(a.date) - new Date(b.date);
+      });
+
+      return arr;
     }
 
     document.getElementById("addDateBtn").addEventListener("click",()=>{
       const val=document.getElementById("dateInput").value;
       const tag=document.getElementById("tagInput").value || "No Tag";
+      const cat=document.getElementById("categoryInput").value || "general";
       if(!val) return alert("Select a date");
-      dates.push({date:val,tag});
+      const id = dates.length ? Math.max(...dates.map(d=>d.id||0))+1 : 0;
+      dates.push({id,date:val,tag,category:cat,pinned:false,createdAt:new Date().toISOString()});
       history.push({new:`${tag} - ${val}`,time:new Date().toLocaleString()});
       saveAll();
       updateResults();
       updateHistory();
       checkDateAchievements();
+      updateInsights();
+      updateStreak();
       document.getElementById("dateInput").value="";
       document.getElementById("tagInput").value="";
     });
 
-    function editDate(index,val){
-      dates[index].date=val;
-      saveAll();
-      updateResults();
-      updateHistory();
+    function findIndexById(id){
+      return dates.findIndex(d=>d.id===id);
     }
-    function editTag(index,val){
-      dates[index].tag=val;
+
+    function editDate(id,val){
+      const i=findIndexById(id);
+      if(i<0) return;
+      dates[i].date=val;
       saveAll();
       updateResults();
       updateHistory();
+      updateInsights();
+      updateStreak();
     }
-    function removeDate(index){
-      dates.splice(index,1);
+    function editTag(id,val){
+      const i=findIndexById(id);
+      if(i<0) return;
+      dates[i].tag=val;
       saveAll();
       updateResults();
       updateHistory();
+      updateInsights();
+      updateStreak();
+    }
+    function editCategory(id,val){
+      const i=findIndexById(id);
+      if(i<0) return;
+      dates[i].category=val;
+      saveAll();
+      updateResults();
+      updateInsights();
+      updateStreak();
+    }
+    function togglePinned(id,checked){
+      const i=findIndexById(id);
+      if(i<0) return;
+      dates[i].pinned = checked;
+      saveAll();
+      updateResults();
+      updateInsights();
+      updateStreak();
+    }
+    function removeDate(id){
+      const i=findIndexById(id);
+      if(i<0) return;
+      dates.splice(i,1);
+      saveAll();
+      updateResults();
+      updateHistory();
+      updateInsights();
+      updateStreak();
     }
 
     function checkDateAchievements(){
@@ -620,6 +921,75 @@
           if(count >= a.threshold) unlockAchievement(a.id);
         });
     }
+
+    // --- Insights ---
+    function updateInsights(){
+      const nextEl = document.getElementById("insightNext");
+      const tagEl = document.getElementById("insightTag");
+      const oldestEl = document.getElementById("insightOldest");
+      const weekEl = document.getElementById("insightWeek");
+
+      if(dates.length===0){
+        nextEl.textContent="–";
+        tagEl.textContent="–";
+        oldestEl.textContent="–";
+        weekEl.textContent="0";
+        return;
+      }
+
+      const now = new Date();
+      // next upcoming
+      const future = dates.filter(d=>new Date(d.date)>=now);
+      if(future.length){
+        future.sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const n = future[0];
+        const t = calculateTime(n.date);
+        nextEl.textContent = `${n.tag} (${t.text})`;
+      } else {
+        nextEl.textContent = "No future dates";
+      }
+
+      // most used tag
+      const counts = {};
+      dates.forEach(d=>{
+        const key = (d.tag||"No Tag").toLowerCase();
+        counts[key] = (counts[key]||0)+1;
+      });
+      let bestTag = null, bestCount=0;
+      Object.entries(counts).forEach(([k,v])=>{
+        if(v>bestCount){bestCount=v;bestTag=k;}
+      });
+      tagEl.textContent = bestTag ? `${bestTag} (${bestCount})` : "–";
+
+      // oldest date
+      const sorted = [...dates].sort((a,b)=>new Date(a.date)-new Date(b.date));
+      const oldest = sorted[0];
+      const tOld = calculateTime(oldest.date);
+      oldestEl.textContent = `${oldest.tag} (${tOld.text})`;
+
+      // added this week
+      const weekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+      const weekCount = dates.filter(d=>{
+        if(!d.createdAt) return false;
+        return new Date(d.createdAt) >= weekAgo;
+      }).length;
+      weekEl.textContent = weekCount.toString();
+    }
+
+    // --- Filters + search ---
+    document.querySelectorAll(".filter-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.getAttribute("data-filter");
+        updateResults();
+      });
+    });
+
+    document.getElementById("searchInput").addEventListener("input",e=>{
+      currentSearch = e.target.value;
+      updateResults();
+    });
 
     // --- History ---
     function updateHistory(){
@@ -635,11 +1005,14 @@
     document.getElementById("clearHistoryBtn").addEventListener("click",()=>{
       if(confirm("Clear history?")){
         dates=[]; history=[]; badges=[]; savedCountdowns=[];
+        streakData={lastActiveDate:null,currentStreak:0,bestStreak:0};
         saveAll();
         updateResults();
         updateHistory();
         updateBadges();
         renderSavedCountdowns();
+        renderStreak();
+        updateInsights();
       }
     });
 
@@ -751,7 +1124,7 @@
 
     // --- Share / backup ---
     document.getElementById("downloadBtn").addEventListener("click",()=>{
-      const data = {dates,history,badges,savedCountdowns};
+      const data = {dates,history,badges,savedCountdowns,streakData};
       const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -770,11 +1143,14 @@
           history=data.history||[];
           badges=data.badges||[];
           savedCountdowns=data.savedCountdowns||[];
+          streakData=data.streakData||streakData;
           saveAll();
           updateResults();
           updateHistory();
           updateBadges();
           renderSavedCountdowns();
+          renderStreak();
+          updateInsights();
           alert("Data loaded!");
         }catch(err){alert("Invalid file");}
       };
@@ -817,6 +1193,9 @@
     updateHistory();
     updateBadges();
     renderSavedCountdowns();
+    renderStreak();
+    updateInsights();
+    updateStreak(); // count first open today
   </script>
 </body>
 </html>
