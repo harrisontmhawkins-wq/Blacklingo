@@ -1541,4 +1541,774 @@
         const left=document.createElement("div");
         left.className="achievement-left";
         const name=document.createElement("
+          function updateBadges(){
+      const list=document.getElementById("badgeList");
+      list.innerHTML="";
+      ACHIEVEMENTS.forEach(a=>{
+        const li=document.createElement("li");
+        li.className="achievement-item " + (badges.includes(a.id) ? "earned" : "unearned");
+        const left=document.createElement("div");
+        left.className="achievement-left";
+        const name=document.createElement("span");
+        name.className="achievement-name";
+        name.textContent = badges.includes(a.id) ? a.label : "???";
+        const rarity=document.createElement("span");
+        rarity.className="achievement-rarity " + rarityClass(a.rarity);
+        rarity.textContent = a.rarity.charAt(0).toUpperCase()+a.rarity.slice(1);
+        left.appendChild(name);
+        left.appendChild(rarity);
+        const right=document.createElement("span");
+        right.style.fontSize="11px";
+        right.style.opacity="0.7";
+        right.textContent = badges.includes(a.id) ? "Unlocked" : "Locked";
+        li.appendChild(left);
+        li.appendChild(right);
+        list.appendChild(li);
+      });
+    }
+
+    // --- Achievement popup ---
+    const popup = document.getElementById("achievementPopup");
+    const popupInner = document.getElementById("achievementPopupInner");
+    const popupName = document.getElementById("achievementPopupName");
+    const popupRarity = document.getElementById("achievementPopupRarity");
+    const popupDesc = document.getElementById("achievementPopupDesc");
+
+    function randomAnimationClass(){
+      const options = ["anim-slide-up","anim-pop-in","anim-glow-pulse","anim-confetti"];
+      return options[Math.floor(Math.random()*options.length)];
+    }
+
+    function popupRarityClass(r){
+      if(r==="rare") return "popup-rare";
+      if(r==="epic") return "popup-epic";
+      if(r==="legendary") return "popup-legendary";
+      return "popup-common";
+    }
+
+    function showAchievementPopup(achievement){
+      popup.style.display="flex";
+      popup.style.pointerEvents="none";
+      popupName.textContent = achievement.label;
+      popupRarity.textContent = achievement.rarity.toUpperCase();
+      popupRarity.className = popupRarityClass(achievement.rarity);
+      popupDesc.textContent = achievement.desc;
+
+      popupInner.className = "";
+      popupInner.classList.add(popupRarityClass(achievement.rarity));
+      popupInner.classList.add(randomAnimationClass());
+
+      setTimeout(()=>{
+        popup.style.display="none";
+      }, 2000);
+    }
+
+    function unlockAchievement(id){
+      if(badges.includes(id)) return;
+      badges.push(id);
+      saveAll();
+      updateBadges();
+      const ach = ACHIEVEMENTS.find(a=>a.id===id);
+      if(ach) showAchievementPopup(ach);
+    }
+
+    // --- Dates + filters + pinned + mood ---
+    let currentFilter = "all";
+    let currentSearch = "";
+
+    function updateResults(){
+      const resultsDiv=document.getElementById("results");
+      resultsDiv.innerHTML="";
+      const filtered = getFilteredDates();
+      filtered.forEach((d)=>{
+        const div=document.createElement("div");
+        div.className="date-item";
+        const t = calculateTime(d.date);
+
+        const pinnedLabel = d.pinned ? `<span class="pinned-label">Pinned</span>` : "";
+        const moodLabel = d.mood ? ` · ${d.mood}` : "";
+
+        div.innerHTML=`
+          <input type="date" value="${d.date}" onchange="editDate(${d.id}, this.value)">
+          <input class="tagName" type="text" value="${d.tag}" placeholder="Tag name" onchange="editTag(${d.id}, this.value)">
+          <select onchange="editCategory(${d.id}, this.value)">
+            <option value="general"${d.category==="general"?" selected":""}>General</option>
+            <option value="birthday"${d.category==="birthday"?" selected":""}>Birthday</option>
+            <option value="anniversary"${d.category==="anniversary"?" selected":""}>Anniversary</option>
+            <option value="work"${d.category==="work"?" selected":""}>Work</option>
+            <option value="school"${d.category==="school"?" selected":""}>School</option>
+            <option value="personal"${d.category==="personal"?" selected":""}>Personal</option>
+          </select>
+          <span class="time-label">${t.text}${moodLabel}${pinnedLabel}</span>
+        `;
+
+        const pinWrap = document.createElement("div");
+        pinWrap.className="pin-toggle";
+        pinWrap.innerHTML = `
+          <label>
+            <input type="checkbox" ${d.pinned ? "checked":""} onchange="togglePinned(${d.id}, this.checked)">
+            Pin
+          </label>
+          <button onclick="removeDate(${d.id})">Remove</button>
+        `;
+        div.appendChild(pinWrap);
+
+        resultsDiv.appendChild(div);
+      });
+
+      updateInsights();
+    }
+
+    function getFilteredDates(){
+      dates.forEach((d,i)=>{
+        if(d.id==null) d.id=i;
+        if(!d.category) d.category="general";
+        if(d.pinned==null) d.pinned=false;
+        if(!d.createdAt) d.createdAt=new Date().toISOString();
+      });
+      let arr = [...dates];
+
+      if(currentSearch.trim()!==""){
+        const q = currentSearch.toLowerCase();
+        arr = arr.filter(d=>
+          (d.tag||"").toLowerCase().includes(q) ||
+          (d.category||"").toLowerCase().includes(q) ||
+          (d.date||"").toLowerCase().includes(q) ||
+          (d.mood||"").toLowerCase().includes(q)
+        );
+      }
+
+      if(currentFilter==="pinned"){
+        arr = arr.filter(d=>d.pinned);
+      } else if(currentFilter!=="all"){
+        arr = arr.filter(d=>d.category===currentFilter);
+      }
+
+      arr.sort((a,b)=>{
+        if(a.pinned && !b.pinned) return -1;
+        if(!a.pinned && b.pinned) return 1;
+        return new Date(a.date) - new Date(b.date);
+      });
+
+      return arr;
+    }
+
+    document.getElementById("addDateBtn").addEventListener("click",()=>{
+      const val=document.getElementById("dateInput").value;
+      const tag=document.getElementById("tagInput").value || "No Tag";
+      const cat=document.getElementById("categoryInput").value || "general";
+      if(!val) return alert("Select a date");
+      const id = dates.length ? Math.max(...dates.map(d=>d.id||0))+1 : 0;
+      const newDateObj = {
+        id,
+        date:val,
+        tag,
+        category:cat,
+        pinned:false,
+        createdAt:new Date().toISOString(),
+        mood:moodState.currentMood || null
+      };
+      dates.push(newDateObj);
+      history.push({new:`${tag} - ${val}`,time:new Date().toLocaleString()});
+      saveAll();
+      updateResults();
+      updateHistory();
+      checkDateAchievements();
+      updateInsights();
+      updateStreak();
+      checkNightOwl(val);
+      document.getElementById("dateInput").value="";
+      document.getElementById("tagInput").value="";
+    });
+
+    function findIndexById(id){
+      return dates.findIndex(d=>d.id===id);
+    }
+
+    function editDate(id,val){
+      const i=findIndexById(id);
+      if(i<0) return;
+      dates[i].date=val;
+      saveAll();
+      updateResults();
+      updateHistory();
+      updateInsights();
+      updateStreak();
+      checkNightOwl(val);
+    }
+    function editTag(id,val){
+      const i=findIndexById(id);
+      if(i<0) return;
+      dates[i].tag=val;
+      saveAll();
+      updateResults();
+      updateHistory();
+      updateInsights();
+      updateStreak();
+    }
+    function editCategory(id,val){
+      const i=findIndexById(id);
+      if(i<0) return;
+      dates[i].category=val;
+      saveAll();
+      updateResults();
+      updateInsights();
+      updateStreak();
+    }
+    function togglePinned(id,checked){
+      const i=findIndexById(id);
+      if(i<0) return;
+      dates[i].pinned = checked;
+      saveAll();
+      updateResults();
+      updateInsights();
+      updateStreak();
+    }
+    function removeDate(id){
+      const i=findIndexById(id);
+      if(i<0) return;
+      dates.splice(i,1);
+      saveAll();
+      updateResults();
+      updateHistory();
+      updateInsights();
+      updateStreak();
+    }
+
+    function checkDateAchievements(){
+      const count = dates.length;
+      ACHIEVEMENTS.filter(a=>["day1","week1","month1","hundred","year1"].includes(a.id))
+        .forEach(a=>{
+          if(count >= a.threshold) unlockAchievement(a.id);
+        });
+    }
+
+    function checkNightOwl(dateStr){
+      const now = new Date();
+      if(now.getHours()===0 && now.getMinutes()===0){
+        unlockAchievement("nightOwl");
+      }
+    }
+
+    // --- Insights ---
+    function updateInsights(){
+      const nextEl = document.getElementById("insightNext");
+      const tagEl = document.getElementById("insightTag");
+      const oldestEl = document.getElementById("insightOldest");
+      const weekEl = document.getElementById("insightWeek");
+
+      if(dates.length===0){
+        nextEl.textContent="–";
+        tagEl.textContent="–";
+        oldestEl.textContent="–";
+        weekEl.textContent="0";
+        return;
+      }
+
+      const now = new Date();
+      const future = dates.filter(d=>new Date(d.date)>=now);
+      if(future.length){
+        future.sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const n = future[0];
+        const t = calculateTime(n.date);
+        nextEl.textContent = `${n.tag} (${t.text})`;
+      } else {
+        nextEl.textContent = "No future dates";
+      }
+
+      const counts = {};
+      dates.forEach(d=>{
+        const key = (d.tag||"No Tag").toLowerCase();
+        counts[key] = (counts[key]||0)+1;
+      });
+      let bestTag = null, bestCount=0;
+      Object.entries(counts).forEach(([k,v])=>{
+        if(v>bestCount){bestCount=v;bestTag=k;}
+      });
+      tagEl.textContent = bestTag ? `${bestTag} (${bestCount})` : "–";
+
+      const sorted = [...dates].sort((a,b)=>new Date(a.date)-new Date(b.date));
+      const oldest = sorted[0];
+      const tOld = calculateTime(oldest.date);
+      oldestEl.textContent = `${oldest.tag} (${tOld.text})`;
+
+      const weekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+      const weekCount = dates.filter(d=>{
+        if(!d.createdAt) return false;
+        return new Date(d.createdAt) >= weekAgo;
+      }).length;
+      weekEl.textContent = weekCount.toString();
+    }
+
+    // --- Filters + search ---
+    document.querySelectorAll(".filter-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.getAttribute("data-filter");
+        updateResults();
+      });
+    });
+
+    document.getElementById("searchInput").addEventListener("input",e=>{
+      currentSearch = e.target.value;
+      updateResults();
+    });
+
+    // --- History ---
+    function updateHistory(){
+      const list=document.getElementById("historyList");
+      list.innerHTML="";
+      history.forEach(h=>{
+        const li=document.createElement("li");
+        li.textContent=`${h.time}: ${h.old||""} → ${h.new||""}`;
+        list.appendChild(li);
+      });
+    }
+
+    document.getElementById("clearHistoryBtn").addEventListener("click",()=>{
+      if(confirm("Clear all data?")){
+        dates=[]; history=[]; badges=[]; savedCountdowns=[];
+        streakData={lastActiveDate:null,currentStreak:0,bestStreak:0};
+        themeState={currentTheme:"neon",changes:0,usedThemes:[]};
+        moodState={currentMood:null,usedMoods:[],moodChanges:0};
+        quoteState={lastDate:null,quoteIndex:null,views:0};
+        extrasTapState={titleTaps:0,gridTaps:0};
+        saveAll();
+        updateResults();
+        updateHistory();
+        updateBadges();
+        renderSavedCountdowns();
+        renderStreak();
+        updateInsights();
+        applyTheme("neon",false);
+        renderMoodUI();
+        renderQuote();
+        renderExtrasStats();
+      }
+    });
+
+    // --- Theme system ---
+    function applyTheme(theme, countChange=true){
+      themeState.currentTheme = theme;
+      if(countChange){
+        themeState.changes += 1;
+      }
+      if(!themeState.usedThemes.includes(theme)){
+        themeState.usedThemes.push(theme);
+      }
+
+      const root = document.documentElement;
+      switch(theme){
+        case "pastel":
+          root.style.setProperty("--bg-main","#f9fafb");
+          root.style.setProperty("--card-bg","rgba(249,250,251,0.95)");
+          root.style.setProperty("--card-border","rgba(148,163,184,0.5)");
+          root.style.setProperty("--accent","#fb7185");
+          root.style.setProperty("--accent-soft","#a855f7");
+          root.style.setProperty("--text-main","#111827");
+          root.style.setProperty("--text-muted","#6b7280");
+          root.style.setProperty("--chip-bg","#e5e7eb");
+          root.style.setProperty("--danger","#b91c1c");
+          break;
+        case "dark":
+          root.style.setProperty("--bg-main","#020617");
+          root.style.setProperty("--card-bg","rgba(15,23,42,0.98)");
+          root.style.setProperty("--card-border","rgba(55,65,81,0.8)");
+          root.style.setProperty("--accent","#22c55e");
+          root.style.setProperty("--accent-soft","#22d3ee");
+          root.style.setProperty("--text-main","#f9fafb");
+          root.style.setProperty("--text-muted","#9ca3af");
+          root.style.setProperty("--chip-bg","#020617");
+          root.style.setProperty("--danger","#b91c1c");
+          break;
+        case "cyberpunk":
+          root.style.setProperty("--bg-main","#05010a");
+          root.style.setProperty("--card-bg","rgba(10,10,30,0.96)");
+          root.style.setProperty("--card-border","rgba(244,114,182,0.7)");
+          root.style.setProperty("--accent","#22d3ee");
+          root.style.setProperty("--accent-soft","#f472b6");
+          root.style.setProperty("--text-main","#f9fafb");
+          root.style.setProperty("--text-muted","#a5b4fc");
+          root.style.setProperty("--chip-bg","#020617");
+          root.style.setProperty("--danger","#f97316");
+          break;
+        case "minimal":
+          root.style.setProperty("--bg-main","#ffffff");
+          root.style.setProperty("--card-bg","#f9fafb");
+          root.style.setProperty("--card-border","rgba(209,213,219,1)");
+          root.style.setProperty("--accent","#0ea5e9");
+          root.style.setProperty("--accent-soft","#6366f1");
+          root.style.setProperty("--text-main","#111827");
+          root.style.setProperty("--text-muted","#6b7280");
+          root.style.setProperty("--chip-bg","#e5e7eb");
+          root.style.setProperty("--danger","#b91c1c");
+          break;
+        default: // neon
+          root.style.setProperty("--bg-main","#050816");
+          root.style.setProperty("--card-bg","rgba(15,23,42,0.9)");
+          root.style.setProperty("--card-border","rgba(148,163,184,0.2)");
+          root.style.setProperty("--accent","#22d3ee");
+          root.style.setProperty("--accent-soft","#a855f7");
+          root.style.setProperty("--text-main","#f5f5f5");
+          root.style.setProperty("--text-muted","#9ca3af");
+          root.style.setProperty("--chip-bg","#020617");
+          root.style.setProperty("--danger","#b91c1c");
+          break;
+      }
+
+      document.querySelectorAll(".theme-btn").forEach(btn=>{
+        btn.classList.toggle("active", btn.getAttribute("data-theme")===theme);
+      });
+
+      saveAll();
+      checkThemeAchievements();
+      renderExtrasStats();
+    }
+
+    function checkThemeAchievements(){
+      if(themeState.changes >= 5){
+        unlockAchievement("themeAddict");
+      }
+      const allThemes = ["neon","pastel","dark","cyberpunk","minimal"];
+      const usedAll = allThemes.every(t=>themeState.usedThemes.includes(t));
+      if(usedAll){
+        unlockAchievement("themeExplorer");
+      }
+    }
+
+    document.querySelectorAll(".theme-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const theme = btn.getAttribute("data-theme");
+        applyTheme(theme,true);
+      });
+    });
+
+    // --- Background & App name ---
+    document.getElementById("bgColorInput").addEventListener("input",e=>{
+      document.body.style.backgroundImage="";
+      document.body.style.backgroundColor=e.target.value;
+      unlockAchievement("bgChanged");
+    });
+    document.getElementById("bgFileInput").addEventListener("change",e=>{
+      const file=e.target.files[0];
+      if(file && file.type.startsWith("image/")){
+        const reader=new FileReader();
+        reader.onload=()=>{
+          document.body.style.backgroundImage=`url(${reader.result})`;
+          document.body.style.backgroundSize="cover";
+          document.body.style.backgroundRepeat="no-repeat";
+          document.body.style.backgroundColor="";
+          unlockAchievement("bgChanged");
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById("changeAppNameBtn").addEventListener("click",()=>{
+      const name=document.getElementById("appNameInput").value;
+      if(name) document.getElementById("appTitle").innerText=name;
+    });
+
+    // --- Countdown ---
+    let countdownInterval;
+    const countdownDisplay = document.getElementById("countdownDisplay");
+
+    function renderSavedCountdowns(){
+      const container = document.getElementById("savedCountdowns");
+      container.innerHTML = "";
+      if(savedCountdowns.length === 0){
+        container.innerHTML = "<p style='font-size:12px;opacity:0.8;'>No saved countdowns yet.</p>";
+        return;
+      }
+      savedCountdowns.forEach((c, index)=>{
+        const div = document.createElement("div");
+        div.className = "countdown-item";
+        const label = document.createElement("span");
+        label.textContent = `${c.name} – ${c.date}`;
+        const btnWrap = document.createElement("div");
+        const startBtn = document.createElement("button");
+        startBtn.textContent = "Start";
+        startBtn.onclick = ()=> startCountdownTo(c.date, c.name);
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.onclick = ()=>{
+          savedCountdowns.splice(index,1);
+          saveAll();
+          renderSavedCountdowns();
+        };
+        btnWrap.appendChild(startBtn);
+        btnWrap.appendChild(deleteBtn);
+        div.appendChild(label);
+        div.appendChild(btnWrap);
+        container.appendChild(div);
+      });
+    }
+
+    function startCountdownTo(dateStr, name){
+      if(!dateStr) return;
+      const target = new Date(dateStr).getTime();
+      clearInterval(countdownInterval);
+
+      countdownInterval = setInterval(()=>{
+        const now = Date.now();
+        const diff = target - now;
+
+        if(diff <= 0){
+          countdownDisplay.innerText = `${name || "Countdown"}: Time's up!`;
+          clearInterval(countdownInterval);
+          alert("Time's up!");
+          return;
+        }
+
+        const days=Math.floor(diff/(1000*60*60*24));
+        const hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+        const minutes=Math.floor((diff%(1000*60*60))/(1000*60));
+        const seconds=Math.floor((diff%(1000*60))/1000);
+
+        countdownDisplay.innerText =
+          `${name || "Countdown"}: ${days}d : ${hours}h : ${minutes}m : ${seconds}s`;
+      },1000);
+    }
+
+    document.getElementById("startCountdownBtn").addEventListener("click",()=>{
+      const dateStr=document.getElementById("countdownDate").value;
+      const name=document.getElementById("countdownName").value || "Countdown";
+      if(!dateStr) return alert("Select a date");
+      startCountdownTo(dateStr, name);
+    });
+
+    document.getElementById("saveCountdownBtn").addEventListener("click",()=>{
+      const dateStr=document.getElementById("countdownDate").value;
+      const name=document.getElementById("countdownName").value || "Countdown";
+      if(!dateStr) return alert("Select a date");
+      savedCountdowns.push({name, date:dateStr});
+      saveAll();
+      renderSavedCountdowns();
+      unlockAchievement("countdownSaved");
+      document.getElementById("countdownName").value = "";
+      document.getElementById("countdownDate").value = "";
+    });
+
+    // --- Share / backup ---
+    document.getElementById("downloadBtn").addEventListener("click",()=>{
+      const data = {dates,history,badges,savedCountdowns,streakData,themeState,moodState,quoteState,extrasTapState};
+      const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "blacklingo_data.json";
+      a.click();
+    });
+
+    document.getElementById("uploadBtn").addEventListener("click",()=>{
+      const file=document.getElementById("uploadDataInput").files[0];
+      if(!file) return alert("Select a file");
+      const reader=new FileReader();
+      reader.onload=function(e){
+        try{
+          const data=JSON.parse(e.target.result);
+          dates=data.dates||[];
+          history=data.history||[];
+          badges=data.badges||[];
+          savedCountdowns=data.savedCountdowns||[];
+          streakData=data.streakData||streakData;
+          themeState=data.themeState||themeState;
+          moodState=data.moodState||moodState;
+          quoteState=data.quoteState||quoteState;
+          extrasTapState=data.extrasTapState||extrasTapState;
+          saveAll();
+          updateResults();
+          updateHistory();
+          updateBadges();
+          renderSavedCountdowns();
+          renderStreak();
+          updateInsights();
+          applyTheme(themeState.currentTheme || "neon", false);
+          renderMoodUI();
+          renderQuote();
+          renderExtrasStats();
+          alert("Data loaded!");
+        }catch(err){alert("Invalid file");}
+      };
+      reader.readAsText(file);
+    });
+
+    function shareApp(){
+      const shareData = {
+        title: 'Blacklingo',
+        text: 'Check out my Blacklingo app! Track dates, moods, countdowns, and unlock neon achievements.',
+        url: window.location.href
+      };
+      if (navigator.share) {
+        navigator.share(shareData)
+          .then(() => {
+            unlockAchievement("sharedApp");
+          })
+          .catch(() => {});
+      } else {
+        const dummy = document.createElement('input');
+        document.body.appendChild(dummy);
+        dummy.value = shareData.url;
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+        alert('Share link copied to clipboard!');
+        unlockAchievement("sharedApp");
+      }
+    }
+
+    // --- Daily quote system ---
+    function todayDateString(){
+      return new Date().toISOString().slice(0,10);
+    }
+
+    function renderQuote(){
+      const quoteTextEl = document.getElementById("dailyQuoteText");
+      const quoteAuthorEl = document.getElementById("dailyQuoteAuthor");
+      const today = todayDateString();
+
+      if(quoteState.lastDate !== today || quoteState.quoteIndex == null){
+        const idx = Math.floor(Math.random()*QUOTES.length);
+        quoteState.lastDate = today;
+        quoteState.quoteIndex = idx;
+        saveAll();
+      }
+
+      const q = QUOTES[quoteState.quoteIndex] || QUOTES[0];
+      quoteTextEl.textContent = `"${q.text}"`;
+      quoteAuthorEl.textContent = q.author ? `— ${q.author}` : "";
+    }
+
+    function incrementQuoteViews(){
+      quoteState.views = (quoteState.views || 0) + 1;
+      saveAll();
+      renderExtrasStats();
+      if(quoteState.views >= 5){
+        unlockAchievement("quoteCollector");
+      }
+    }
+
+    // --- Mood system ---
+    function renderMoodUI(){
+      const label = document.getElementById("currentMoodLabel");
+      label.textContent = "Current mood: " + (moodState.currentMood || "None");
+      document.querySelectorAll(".mood-btn").forEach(btn=>{
+        const m = btn.getAttribute("data-mood");
+        btn.classList.toggle("active", m === moodState.currentMood);
+      });
+      renderExtrasStats();
+    }
+
+    document.querySelectorAll(".mood-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const mood = btn.getAttribute("data-mood");
+        if(moodState.currentMood !== mood){
+          moodState.currentMood = mood;
+          moodState.moodChanges = (moodState.moodChanges || 0) + 1;
+          if(!moodState.usedMoods.includes(mood)){
+            moodState.usedMoods.push(mood);
+          }
+          saveAll();
+          renderMoodUI();
+          if(moodState.usedMoods.length >= 3){
+            unlockAchievement("moodMaster");
+          }
+        }
+      });
+    });
+
+    // --- Secret console / Easter eggs ---
+    document.getElementById("secretCodeBtn").addEventListener("click",()=>{
+      const input = document.getElementById("secretCodeInput");
+      const result = document.getElementById("secretCodeResult");
+      const code = (input.value || "").trim().toUpperCase();
+      if(!code){
+        result.textContent = "Enter a code first.";
+        return;
+      }
+
+      if(code === "BLACKLINGO"){
+        result.textContent = "Secret accepted. You've found something special.";
+        unlockAchievement("secretFinder");
+      } else if(code === "NEON"){
+        result.textContent = "Neon mode already active. But nice try.";
+      } else if(code === "GLITCH"){
+        result.textContent = "Glitch vibes acknowledged.";
+        unlockAchievement("mysteryTapper");
+      } else {
+        result.textContent = "Unknown code. Try again.";
+      }
+      input.value = "";
+    });
+
+    // Extras title taps
+    const extrasTitle = document.getElementById("extrasTitle");
+    extrasTitle.addEventListener("click",()=>{
+      extrasTapState.titleTaps = (extrasTapState.titleTaps || 0) + 1;
+      if(extrasTapState.titleTaps === 7){
+        unlockAchievement("mysteryTapper");
+      }
+      saveAll();
+    });
+
+    // Extras grid taps
+    const extrasBg = document.getElementById("extrasGridBg");
+    extrasBg.addEventListener("click",()=>{
+      extrasTapState.gridTaps = (extrasTapState.gridTaps || 0) + 1;
+      if(extrasTapState.gridTaps === 10){
+        unlockAchievement("secretFinder");
+      }
+      saveAll();
+    });
+
+    // Quote card click = view
+    document.getElementById("extrasQuoteCard").addEventListener("click",()=>{
+      incrementQuoteViews();
+    });
+
+    // --- Extras stats ---
+    function renderExtrasStats(){
+      const themeChangesStat = document.getElementById("themeChangesStat");
+      const themeUsedStat = document.getElementById("themeUsedStat");
+      const moodUsedStat = document.getElementById("moodUsedStat");
+      const quotesViewedStat = document.getElementById("quotesViewedStat");
+
+      themeChangesStat.textContent = `Theme changes: ${themeState.changes || 0}`;
+      themeUsedStat.textContent = `Themes used: ${themeState.usedThemes && themeState.usedThemes.length ? themeState.usedThemes.join(", ") : "–"}`;
+      moodUsedStat.textContent = `Moods used: ${moodState.usedMoods && moodState.usedMoods.length ? moodState.usedMoods.join(", ") : "–"}`;
+      quotesViewedStat.textContent = `Quotes viewed: ${quoteState.views || 0}`;
+    }
+
+    // --- Service worker ---
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch((err) => console.log("SW error:", err));
+    }
+
+    // --- App title taps (extra Easter egg hook) ---
+    let appTitleTapCount = 0;
+    document.getElementById("appTitle").addEventListener("click",()=>{
+      appTitleTapCount++;
+      if(appTitleTapCount === 7){
+        unlockAchievement("mysteryTapper");
+      }
+    });
+
+    // --- Initial render ---
+    applyTheme(themeState.currentTheme || "neon", false);
+    updateResults();
+    updateHistory();
+    updateBadges();
+    renderSavedCountdowns();
+    renderStreak();
+    updateInsights();
+    renderMoodUI();
+    renderQuote();
+    renderExtrasStats();
+    updateStreak(); // count first open today
+  </script>
+</body>
+</html>
+
 
