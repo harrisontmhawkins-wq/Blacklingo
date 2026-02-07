@@ -1,3 +1,445 @@
+Perfect! Here's the complete code with authentication fully integrated:
+
+## **1. Create `login.html`** 
+
+```html name=login.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blacklingo - Login</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #050816;
+      color: #f5f5f5;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 420px;
+      padding: 16px;
+    }
+
+    .login-container {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-header h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #22d3ee, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .login-header p {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+      background: rgba(31, 41, 55, 0.5);
+      border-radius: 10px;
+      padding: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: #9ca3af;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #22d3ee, #a855f7);
+      color: #0b1120;
+    }
+
+    .form-section {
+      display: none;
+    }
+
+    .form-section.active {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: #d1d5db;
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #4b5563;
+      border-radius: 8px;
+      background: rgba(2, 6, 23, 0.6);
+      color: #e5e7eb;
+      font-size: 13px;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #22d3ee;
+      background: rgba(2, 6, 23, 0.9);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.2);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, #22d3ee, #a855f7);
+      color: #0b1120;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+      margin-top: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(34, 211, 238, 0.3);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .message {
+      font-size: 12px;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .error {
+      color: #fecaca;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      display: none;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .success {
+      color: #86efac;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      display: none;
+    }
+
+    .success.show {
+      display: block;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      font-size: 12px;
+      color: #22d3ee;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    @media (max-width: 500px) {
+      .login-container {
+        padding: 24px;
+      }
+
+      .login-header h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-container">
+      <div class="login-header">
+        <h1>Blacklingo</h1>
+        <p>Track dates, moods & achievements</p>
+      </div>
+
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="login" class="form-section active">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="loginUsername" placeholder="Enter your username" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+        </div>
+        <button class="submit-btn" onclick="handleLogin()">Login</button>
+        <div id="loginLoading" class="loading">Logging in...</div>
+        <div id="loginError" class="message error"></div>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div id="signup" class="form-section">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="signupUsername" placeholder="Choose a username (3+ chars)" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="signupPassword" placeholder="Create a password (6+ chars)" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" id="signupConfirm" placeholder="Confirm your password" autocomplete="new-password">
+        </div>
+        <button class="submit-btn" onclick="handleSignup()">Create Account</button>
+        <div id="signupLoading" class="loading">Creating account...</div>
+        <div id="signupError" class="message error"></div>
+        <div id="signupSuccess" class="message success"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== USER MANAGER CLASS =====
+    class UserManager {
+      constructor() {
+        this.usersKey = 'blacklingoUsers';
+        this.currentUserKey = 'blacklingoCurrentUser';
+      }
+
+      getAllUsers() {
+        const users = localStorage.getItem(this.usersKey);
+        return users ? JSON.parse(users) : {};
+      }
+
+      userExists(username) {
+        const users = this.getAllUsers();
+        return users.hasOwnProperty(username.toLowerCase());
+      }
+
+      async registerUser(username, password) {
+        const lowerUsername = username.toLowerCase();
+
+        if (this.userExists(username)) {
+          throw new Error('Username already exists');
+        }
+        if (username.length < 3) {
+          throw new Error('Username must be at least 3 characters');
+        }
+        if (password.length < 6) {
+          throw new Error('Password must be at least 6 characters');
+        }
+        if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+          throw new Error('Username can only contain letters, numbers, underscores, and hyphens');
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const users = this.getAllUsers();
+
+        users[lowerUsername] = {
+          password: hashedPassword,
+          createdAt: new Date().toISOString()
+        };
+
+        localStorage.setItem(this.usersKey, JSON.stringify(users));
+        return true;
+      }
+
+      async loginUser(username, password) {
+        const lowerUsername = username.toLowerCase();
+        const users = this.getAllUsers();
+
+        if (!users.hasOwnProperty(lowerUsername)) {
+          throw new Error('Username not found');
+        }
+
+        const user = users[lowerUsername];
+        const isValid = await bcrypt.compare(password, user.password);
+
+        if (!isValid) {
+          throw new Error('Incorrect password');
+        }
+
+        return lowerUsername;
+      }
+
+      getCurrentUser() {
+        return localStorage.getItem(this.currentUserKey);
+      }
+
+      setCurrentUser(username) {
+        localStorage.setItem(this.currentUserKey, username);
+      }
+
+      logout() {
+        localStorage.removeItem(this.currentUserKey);
+      }
+    }
+
+    const userManager = new UserManager();
+
+    // ===== TAB SWITCHING =====
+    function switchTab(tab) {
+      document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      event.target.classList.add('active');
+
+      // Clear messages
+      document.getElementById('loginError').classList.remove('show');
+      document.getElementById('signupError').classList.remove('show');
+      document.getElementById('signupSuccess').classList.remove('show');
+    }
+
+    // ===== SIGNUP HANDLER =====
+    async function handleSignup() {
+      const username = document.getElementById('signupUsername').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const confirm = document.getElementById('signupConfirm').value;
+      const errorEl = document.getElementById('signupError');
+      const successEl = document.getElementById('signupSuccess');
+      const loadingEl = document.getElementById('signupLoading');
+
+      errorEl.classList.remove('show');
+      successEl.classList.remove('show');
+
+      try {
+        if (!username) throw new Error('Username is required');
+        if (!password) throw new Error('Password is required');
+        if (password !== confirm) throw new Error('Passwords do not match');
+
+        loadingEl.classList.add('show');
+        await userManager.registerUser(username, password);
+        loadingEl.classList.remove('show');
+
+        successEl.textContent = '✓ Account created! Switch to Login to sign in.';
+        successEl.classList.add('show');
+
+        document.getElementById('signupUsername').value = '';
+        document.getElementById('signupPassword').value = '';
+        document.getElementById('signupConfirm').value = '';
+
+        setTimeout(() => {
+          switchTab('login');
+        }, 2000);
+      } catch (err) {
+        loadingEl.classList.remove('show');
+        errorEl.textContent = '✗ ' + err.message;
+        errorEl.classList.add('show');
+      }
+    }
+
+    // ===== LOGIN HANDLER =====
+    async function handleLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+      const loadingEl = document.getElementById('loginLoading');
+
+      errorEl.classList.remove('show');
+
+      try {
+        if (!username) throw new Error('Username is required');
+        if (!password) throw new Error('Password is required');
+
+        loadingEl.classList.add('show');
+        const loggedInUser = await userManager.loginUser(username, password);
+        loadingEl.classList.remove('show');
+
+        userManager.setCurrentUser(loggedInUser);
+        window.location.href = 'index.html';
+      } catch (err) {
+        loadingEl.classList.remove('show');
+        errorEl.textContent = '✗ ' + err.message;
+        errorEl.classList.add('show');
+      }
+    }
+
+    // ===== AUTO REDIRECT IF ALREADY LOGGED IN =====
+    if (userManager.getCurrentUser()) {
+      window.location.href = 'index.html';
+    }
+
+    // ===== ENTER KEY SUPPORT =====
+    document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleLogin();
+    });
+    document.getElementById('signupConfirm').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleSignup();
+    });
+  </script>
+</body>
+</html>
+```
+
+---
+
+## **2. Updated `index.html` (With Auth)**
+
+```html name=index.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,6 +482,24 @@
       z-index:10;
     }
     #appTitle{font-weight:700;letter-spacing:0.06em;cursor:pointer;}
+    .header-info{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:12px;
+    }
+    .username-badge{
+      background:rgba(34,211,238,0.1);
+      border:1px solid rgba(34,211,238,0.3);
+      padding:4px 8px;
+      border-radius:999px;
+      color:#22d3ee;
+    }
+    .nav-buttons{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
     .nav-buttons button{
       margin-left:6px;
       padding:6px 10px;
@@ -49,8 +509,11 @@
       color:#f9fafb;
       cursor:pointer;
       font-size:13px;
+      transition:all 0.3s ease;
     }
     .nav-buttons button:hover{background:#4b5563;}
+    .nav-buttons button.logout{background:#b91c1c;}
+    .nav-buttons button.logout:hover{background:#991b1b;}
     main{flex:1;padding:16px;max-width:950px;margin:0 auto;width:100%;}
     #landing{
       flex:1;
@@ -598,12 +1061,16 @@
         align-items:flex-start;
       }
       .date-item span.time-label{text-align:left;}
+      .header-info{flex-direction:column;gap:4px;}
     }
   </style>
 </head>
 <body>
   <header>
     <div id="appTitle">Blacklingo</div>
+    <div class="header-info">
+      <span class="username-badge">👤 <span id="usernameDisplay">User</span></span>
+    </div>
     <div class="nav-buttons">
       <button onclick="goHome()">Home</button>
       <button onclick="showSection('datesSection')">Dates</button>
@@ -613,6 +1080,7 @@
       <button onclick="showSection('settingsSection')">Settings</button>
       <button onclick="showSection('shareSection')">Share</button>
       <button onclick="showSection('extrasSection')">Extras</button>
+      <button class="logout" onclick="logoutUser()">Logout</button>
     </div>
   </header>
 
@@ -792,7 +1260,7 @@
 
               <!-- Mood -->
               <div class="extras-card" id="extrasMoodCard">
-                <h3>Today’s Mood</h3>
+                <h3>Today's Mood</h3>
                 <div class="extras-sub">Pick how you feel · New dates inherit this mood</div>
                 <div id="currentMoodLabel" style="font-size:13px;margin-bottom:4px;">Current mood: None</div>
                 <div class="extras-mood-row">
@@ -815,7 +1283,7 @@
                   <button id="secretCodeBtn">Run</button>
                 </div>
                 <div id="secretCodeResult" style="font-size:11px;margin-top:4px;opacity:0.9;"></div>
-                <div class="extras-hint">Hint: Try something related to the app’s name.</div>
+                <div class="extras-hint">Hint: Try something related to the app's name.</div>
               </div>
 
               <!-- Theme stats / Easter egg hints -->
@@ -859,6 +1327,43 @@
   </div>
 
   <script>
+    // ===== AUTH MANAGER =====
+    class UserManager {
+      constructor() {
+        this.currentUserKey = 'blacklingoCurrentUser';
+      }
+
+      getCurrentUser() {
+        return localStorage.getItem(this.currentUserKey);
+      }
+
+      logout() {
+        localStorage.removeItem(this.currentUserKey);
+        window.location.href = 'login.html';
+      }
+    }
+
+    const userManager = new UserManager();
+    const currentUsername = userManager.getCurrentUser();
+
+    // Check if user is logged in
+    if (!currentUsername) {
+      window.location.href = 'login.html';
+    }
+
+    // Display username in header
+    document.getElementById('usernameDisplay').textContent = currentUsername;
+
+    // ===== LOGOUT FUNCTION =====
+    function logoutUser() {
+      if (confirm('Are you sure you want to logout?')) {
+        userManager.logout();
+      }
+    }
+
+    // ===== STORAGE HELPER (USER-SPECIFIC) =====
+    const userDataKey = (key) => `${currentUsername}_${key}`;
+
     // --- Navigation ---
     function showSection(sectionId){
       document.getElementById('landing').style.display='none';
@@ -873,41 +1378,41 @@
     }
 
     // --- Data ---
-    let dates = JSON.parse(localStorage.getItem("blacklingoDates")) || [];
-    let history = JSON.parse(localStorage.getItem("blacklingoHistory")) || [];
-    let badges = JSON.parse(localStorage.getItem("blacklingoBadges")) || [];
-    let savedCountdowns = JSON.parse(localStorage.getItem("blacklingoCountdowns")) || [];
+    let dates = JSON.parse(localStorage.getItem(userDataKey("blacklingoDates"))) || [];
+    let history = JSON.parse(localStorage.getItem(userDataKey("blacklingoHistory"))) || [];
+    let badges = JSON.parse(localStorage.getItem(userDataKey("blacklingoBadges"))) || [];
+    let savedCountdowns = JSON.parse(localStorage.getItem(userDataKey("blacklingoCountdowns"))) || [];
 
     // Streak data
-    let streakData = JSON.parse(localStorage.getItem("blacklingoStreak")) || {
+    let streakData = JSON.parse(localStorage.getItem(userDataKey("blacklingoStreak"))) || {
       lastActiveDate: null,
       currentStreak: 0,
       bestStreak: 0
     };
 
     // Theme data
-    let themeState = JSON.parse(localStorage.getItem("blacklingoThemeState")) || {
+    let themeState = JSON.parse(localStorage.getItem(userDataKey("blacklingoThemeState"))) || {
       currentTheme: "neon",
       changes: 0,
       usedThemes: []
     };
 
     // Mood data
-    let moodState = JSON.parse(localStorage.getItem("blacklingoMoodState")) || {
+    let moodState = JSON.parse(localStorage.getItem(userDataKey("blacklingoMoodState"))) || {
       currentMood: null,
       usedMoods: [],
       moodChanges: 0
     };
 
     // Daily quote data
-    let quoteState = JSON.parse(localStorage.getItem("blacklingoQuoteState")) || {
+    let quoteState = JSON.parse(localStorage.getItem(userDataKey("blacklingoQuoteState"))) || {
       lastDate: null,
       quoteIndex: null,
       views: 0
     };
 
     // Extras taps
-    let extrasTapState = JSON.parse(localStorage.getItem("blacklingoExtrasTaps")) || {
+    let extrasTapState = JSON.parse(localStorage.getItem(userDataKey("blacklingoExtrasTaps"))) || {
       titleTaps: 0,
       gridTaps: 0
     };
@@ -915,29 +1420,29 @@
     // Achievements with rarity + description
     const ACHIEVEMENTS = [
       {id:"day1", threshold:1, label:"🥇 Day 1 Starter", rarity:"common", desc:"You added your first date."},
-      {id:"week1", threshold:7, label:"🏅 Week 1 Warrior", rarity:"rare", desc:"You’ve tracked at least 7 dates."},
-      {id:"month1", threshold:30, label:"🎖 Month 1 Master", rarity:"epic", desc:"30 dates tracked. You’re committed."},
-      {id:"hundred", threshold:100, label:"🏆 Century Champ", rarity:"epic", desc:"100 dates tracked. That’s huge."},
+      {id:"week1", threshold:7, label:"🏅 Week 1 Warrior", rarity:"rare", desc:"You've tracked at least 7 dates."},
+      {id:"month1", threshold:30, label:"🎖 Month 1 Master", rarity:"epic", desc:"30 dates tracked. You're committed."},
+      {id:"hundred", threshold:100, label:"🏆 Century Champ", rarity:"epic", desc:"100 dates tracked. That's huge."},
       {id:"year1", threshold:365, label:"👑 Year 1 Hero", rarity:"legendary", desc:"365 dates tracked. A full year of moments."},
       {id:"countdownSaved", threshold:1, label:"⏳ Countdown Keeper", rarity:"rare", desc:"You saved your first countdown."},
       {id:"bgChanged", threshold:1, label:"🎨 Theme Shifter", rarity:"rare", desc:"You customised your background."},
       {id:"sharedApp", threshold:1, label:"📤 Signal Booster", rarity:"epic", desc:"You shared Blacklingo with someone."},
-      {id:"streak3", threshold:3, label:"🔥 3-Day Streak", rarity:"common", desc:"You’ve kept a 3-day streak."},
+      {id:"streak3", threshold:3, label:"🔥 3-Day Streak", rarity:"common", desc:"You've kept a 3-day streak."},
       {id:"streak7", threshold:7, label:"⚡ 7-Day Streak", rarity:"rare", desc:"A full week of activity."},
       {id:"streak30", threshold:30, label:"💎 30-Day Streak", rarity:"epic", desc:"30 days of consistency."},
       {id:"streak100", threshold:100, label:"🌟 100-Day Streak", rarity:"legendary", desc:"100 days in a row. Unreal."},
       {id:"themeAddict", threshold:5, label:"🎭 Theme Addict", rarity:"rare", desc:"You changed themes 5 times."},
       {id:"themeExplorer", threshold:5, label:"🌈 Theme Explorer", rarity:"epic", desc:"You tried all available themes."},
       {id:"secretFinder", threshold:1, label:"🔮 Secret Finder", rarity:"epic", desc:"You uncovered a hidden secret."},
-      {id:"mysteryTapper", threshold:1, label:"👁 Mystery Tapper", rarity:"rare", desc:"You tapped where others wouldn’t."},
+      {id:"mysteryTapper", threshold:1, label:"👁 Mystery Tapper", rarity:"rare", desc:"You tapped where others wouldn't."},
       {id:"nightOwl", threshold:1, label:"🌙 Night Owl", rarity:"epic", desc:"You added a date at midnight."},
-      {id:"moodMaster", threshold:3, label:"😊 Mood Master", rarity:"rare", desc:"You’ve used multiple moods across days."},
-      {id:"quoteCollector", threshold:5, label:"📜 Quote Collector", rarity:"epic", desc:"You’ve viewed many daily quotes."}
+      {id:"moodMaster", threshold:3, label:"😊 Mood Master", rarity:"rare", desc:"You've used multiple moods across days."},
+      {id:"quoteCollector", threshold:5, label:"📜 Quote Collector", rarity:"epic", desc:"You've viewed many daily quotes."}
     ];
 
     const QUOTES = [
       {text:"Small steps every day become big changes over time.", author:"Unknown"},
-      {text:"You don’t have to feel ready to begin.", author:"Unknown"},
+      {text:"You don't have to feel ready to begin.", author:"Unknown"},
       {text:"Your future self is watching what you do today.", author:"Unknown"},
       {text:"Discipline is remembering what you want.", author:"David Campbell"},
       {text:"You are allowed to be both a masterpiece and a work in progress.", author:"Sophia Bush"},
@@ -949,15 +1454,15 @@
     ];
 
     function saveAll(){
-      localStorage.setItem("blacklingoDates",JSON.stringify(dates));
-      localStorage.setItem("blacklingoHistory",JSON.stringify(history));
-      localStorage.setItem("blacklingoBadges",JSON.stringify(badges));
-      localStorage.setItem("blacklingoCountdowns",JSON.stringify(savedCountdowns));
-      localStorage.setItem("blacklingoStreak",JSON.stringify(streakData));
-      localStorage.setItem("blacklingoThemeState",JSON.stringify(themeState));
-      localStorage.setItem("blacklingoMoodState",JSON.stringify(moodState));
-      localStorage.setItem("blacklingoQuoteState",JSON.stringify(quoteState));
-      localStorage.setItem("blacklingoExtrasTaps",JSON.stringify(extrasTapState));
+      localStorage.setItem(userDataKey("blacklingoDates"),JSON.stringify(dates));
+      localStorage.setItem(userDataKey("blacklingoHistory"),JSON.stringify(history));
+      localStorage.setItem(userDataKey("blacklingoBadges"),JSON.stringify(badges));
+      localStorage.setItem(userDataKey("blacklingoCountdowns"),JSON.stringify(savedCountdowns));
+      localStorage.setItem(userDataKey("blacklingoStreak"),JSON.stringify(streakData));
+      localStorage.setItem(userDataKey("blacklingoThemeState"),JSON.stringify(themeState));
+      localStorage.setItem(userDataKey("blacklingoMoodState"),JSON.stringify(moodState));
+      localStorage.setItem(userDataKey("blacklingoQuoteState"),JSON.stringify(quoteState));
+      localStorage.setItem(userDataKey("blacklingoExtrasTaps"),JSON.stringify(extrasTapState));
     }
 
     // --- Time calculation ---
@@ -1040,769 +1545,4 @@
         li.className="achievement-item " + (badges.includes(a.id) ? "earned" : "unearned");
         const left=document.createElement("div");
         left.className="achievement-left";
-        const name=document.createElement("span");
-        name.className="achievement-name";
-        name.textContent = badges.includes(a.id) ? a.label : "???";
-        const rarity=document.createElement("span");
-        rarity.className="achievement-rarity " + rarityClass(a.rarity);
-        rarity.textContent = a.rarity.charAt(0).toUpperCase()+a.rarity.slice(1);
-        left.appendChild(name);
-        left.appendChild(rarity);
-        const right=document.createElement("span");
-        right.style.fontSize="11px";
-        right.style.opacity="0.7";
-        right.textContent = badges.includes(a.id) ? "Unlocked" : "Locked";
-        li.appendChild(left);
-        li.appendChild(right);
-        list.appendChild(li);
-      });
-    }
-
-    // --- Achievement popup ---
-    const popup = document.getElementById("achievementPopup");
-    const popupInner = document.getElementById("achievementPopupInner");
-    const popupName = document.getElementById("achievementPopupName");
-    const popupRarity = document.getElementById("achievementPopupRarity");
-    const popupDesc = document.getElementById("achievementPopupDesc");
-
-    function randomAnimationClass(){
-      const options = ["anim-slide-up","anim-pop-in","anim-glow-pulse","anim-confetti"];
-      return options[Math.floor(Math.random()*options.length)];
-    }
-
-    function popupRarityClass(r){
-      if(r==="rare") return "popup-rare";
-      if(r==="epic") return "popup-epic";
-      if(r==="legendary") return "popup-legendary";
-      return "popup-common";
-    }
-
-    function showAchievementPopup(achievement){
-      popup.style.display="flex";
-      popup.style.pointerEvents="none";
-      popupName.textContent = achievement.label;
-      popupRarity.textContent = achievement.rarity.toUpperCase();
-      popupRarity.className = popupRarityClass(achievement.rarity);
-      popupDesc.textContent = achievement.desc;
-
-      popupInner.className = "";
-      popupInner.classList.add(popupRarityClass(achievement.rarity));
-      popupInner.classList.add(randomAnimationClass());
-
-      setTimeout(()=>{
-        popup.style.display="none";
-      }, 2000);
-    }
-
-    function unlockAchievement(id){
-      if(badges.includes(id)) return;
-      badges.push(id);
-      saveAll();
-      updateBadges();
-      const ach = ACHIEVEMENTS.find(a=>a.id===id);
-      if(ach) showAchievementPopup(ach);
-    }
-
-    // --- Dates + filters + pinned + mood ---
-    let currentFilter = "all";
-    let currentSearch = "";
-
-    function updateResults(){
-      const resultsDiv=document.getElementById("results");
-      resultsDiv.innerHTML="";
-      const filtered = getFilteredDates();
-      filtered.forEach((d)=>{
-        const div=document.createElement("div");
-        div.className="date-item";
-        const t = calculateTime(d.date);
-
-        const pinnedLabel = d.pinned ? `<span class="pinned-label">Pinned</span>` : "";
-        const moodLabel = d.mood ? ` · ${d.mood}` : "";
-
-        div.innerHTML=`
-          <input type="date" value="${d.date}" onchange="editDate(${d.id}, this.value)">
-          <input class="tagName" type="text" value="${d.tag}" placeholder="Tag name" onchange="editTag(${d.id}, this.value)">
-          <select onchange="editCategory(${d.id}, this.value)">
-            <option value="general"${d.category==="general"?" selected":""}>General</option>
-            <option value="birthday"${d.category==="birthday"?" selected":""}>Birthday</option>
-            <option value="anniversary"${d.category==="anniversary"?" selected":""}>Anniversary</option>
-            <option value="work"${d.category==="work"?" selected":""}>Work</option>
-            <option value="school"${d.category==="school"?" selected":""}>School</option>
-            <option value="personal"${d.category==="personal"?" selected":""}>Personal</option>
-          </select>
-          <span class="time-label">${t.text}${moodLabel}${pinnedLabel}</span>
-        `;
-
-        const pinWrap = document.createElement("div");
-        pinWrap.className="pin-toggle";
-        pinWrap.innerHTML = `
-          <label>
-            <input type="checkbox" ${d.pinned ? "checked":""} onchange="togglePinned(${d.id}, this.checked)">
-            Pin
-          </label>
-          <button onclick="removeDate(${d.id})">Remove</button>
-        `;
-        div.appendChild(pinWrap);
-
-        resultsDiv.appendChild(div);
-      });
-
-      updateInsights();
-    }
-
-    function getFilteredDates(){
-      dates.forEach((d,i)=>{
-        if(d.id==null) d.id=i;
-        if(!d.category) d.category="general";
-        if(d.pinned==null) d.pinned=false;
-        if(!d.createdAt) d.createdAt=new Date().toISOString();
-      });
-      let arr = [...dates];
-
-      if(currentSearch.trim()!==""){
-        const q = currentSearch.toLowerCase();
-        arr = arr.filter(d=>
-          (d.tag||"").toLowerCase().includes(q) ||
-          (d.category||"").toLowerCase().includes(q) ||
-          (d.date||"").toLowerCase().includes(q) ||
-          (d.mood||"").toLowerCase().includes(q)
-        );
-      }
-
-      if(currentFilter==="pinned"){
-        arr = arr.filter(d=>d.pinned);
-      } else if(currentFilter!=="all"){
-        arr = arr.filter(d=>d.category===currentFilter);
-      }
-
-      arr.sort((a,b)=>{
-        if(a.pinned && !b.pinned) return -1;
-        if(!a.pinned && b.pinned) return 1;
-        return new Date(a.date) - new Date(b.date);
-      });
-
-      return arr;
-    }
-
-    document.getElementById("addDateBtn").addEventListener("click",()=>{
-      const val=document.getElementById("dateInput").value;
-      const tag=document.getElementById("tagInput").value || "No Tag";
-      const cat=document.getElementById("categoryInput").value || "general";
-      if(!val) return alert("Select a date");
-      const id = dates.length ? Math.max(...dates.map(d=>d.id||0))+1 : 0;
-      const newDateObj = {
-        id,
-        date:val,
-        tag,
-        category:cat,
-        pinned:false,
-        createdAt:new Date().toISOString(),
-        mood:moodState.currentMood || null
-      };
-      dates.push(newDateObj);
-      history.push({new:`${tag} - ${val}`,time:new Date().toLocaleString()});
-      saveAll();
-      updateResults();
-      updateHistory();
-      checkDateAchievements();
-      updateInsights();
-      updateStreak();
-      checkNightOwl(val);
-      document.getElementById("dateInput").value="";
-      document.getElementById("tagInput").value="";
-    });
-
-    function findIndexById(id){
-      return dates.findIndex(d=>d.id===id);
-    }
-
-    function editDate(id,val){
-      const i=findIndexById(id);
-      if(i<0) return;
-      dates[i].date=val;
-      saveAll();
-      updateResults();
-      updateHistory();
-      updateInsights();
-      updateStreak();
-      checkNightOwl(val);
-    }
-    function editTag(id,val){
-      const i=findIndexById(id);
-      if(i<0) return;
-      dates[i].tag=val;
-      saveAll();
-      updateResults();
-      updateHistory();
-      updateInsights();
-      updateStreak();
-    }
-    function editCategory(id,val){
-      const i=findIndexById(id);
-      if(i<0) return;
-      dates[i].category=val;
-      saveAll();
-      updateResults();
-      updateInsights();
-      updateStreak();
-    }
-    function togglePinned(id,checked){
-      const i=findIndexById(id);
-      if(i<0) return;
-      dates[i].pinned = checked;
-      saveAll();
-      updateResults();
-      updateInsights();
-      updateStreak();
-    }
-    function removeDate(id){
-      const i=findIndexById(id);
-      if(i<0) return;
-      dates.splice(i,1);
-      saveAll();
-      updateResults();
-      updateHistory();
-      updateInsights();
-      updateStreak();
-    }
-
-    function checkDateAchievements(){
-      const count = dates.length;
-      ACHIEVEMENTS.filter(a=>["day1","week1","month1","hundred","year1"].includes(a.id))
-        .forEach(a=>{
-          if(count >= a.threshold) unlockAchievement(a.id);
-        });
-    }
-
-    function checkNightOwl(dateStr){
-      // if user adds a date exactly at midnight local time (00:00)
-      const now = new Date();
-      if(now.getHours()===0 && now.getMinutes()===0){
-        unlockAchievement("nightOwl");
-      }
-    }
-
-    // --- Insights ---
-    function updateInsights(){
-      const nextEl = document.getElementById("insightNext");
-      const tagEl = document.getElementById("insightTag");
-      const oldestEl = document.getElementById("insightOldest");
-      const weekEl = document.getElementById("insightWeek");
-
-      if(dates.length===0){
-        nextEl.textContent="–";
-        tagEl.textContent="–";
-        oldestEl.textContent="–";
-        weekEl.textContent="0";
-        return;
-      }
-
-      const now = new Date();
-      const future = dates.filter(d=>new Date(d.date)>=now);
-      if(future.length){
-        future.sort((a,b)=>new Date(a.date)-new Date(b.date));
-        const n = future[0];
-        const t = calculateTime(n.date);
-        nextEl.textContent = `${n.tag} (${t.text})`;
-      } else {
-        nextEl.textContent = "No future dates";
-      }
-
-      const counts = {};
-      dates.forEach(d=>{
-        const key = (d.tag||"No Tag").toLowerCase();
-        counts[key] = (counts[key]||0)+1;
-      });
-      let bestTag = null, bestCount=0;
-      Object.entries(counts).forEach(([k,v])=>{
-        if(v>bestCount){bestCount=v;bestTag=k;}
-      });
-      tagEl.textContent = bestTag ? `${bestTag} (${bestCount})` : "–";
-
-      const sorted = [...dates].sort((a,b)=>new Date(a.date)-new Date(b.date));
-      const oldest = sorted[0];
-      const tOld = calculateTime(oldest.date);
-      oldestEl.textContent = `${oldest.tag} (${tOld.text})`;
-
-      const weekAgo = new Date(now.getTime() - 7*24*60*60*1000);
-      const weekCount = dates.filter(d=>{
-        if(!d.createdAt) return false;
-        return new Date(d.createdAt) >= weekAgo;
-      }).length;
-      weekEl.textContent = weekCount.toString();
-    }
-
-    // --- Filters + search ---
-    document.querySelectorAll(".filter-btn").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-        currentFilter = btn.getAttribute("data-filter");
-        updateResults();
-      });
-    });
-
-    document.getElementById("searchInput").addEventListener("input",e=>{
-      currentSearch = e.target.value;
-      updateResults();
-    });
-
-    // --- History ---
-    function updateHistory(){
-      const list=document.getElementById("historyList");
-      list.innerHTML="";
-      history.forEach(h=>{
-        const li=document.createElement("li");
-        li.textContent=`${h.time}: ${h.old||""} → ${h.new||""}`;
-        list.appendChild(li);
-      });
-    }
-
-    document.getElementById("clearHistoryBtn").addEventListener("click",()=>{
-      if(confirm("Clear history?")){
-        dates=[]; history=[]; badges=[]; savedCountdowns=[];
-        streakData={lastActiveDate:null,currentStreak:0,bestStreak:0};
-        themeState={currentTheme:"neon",changes:0,usedThemes:[]};
-        moodState={currentMood:null,usedMoods:[],moodChanges:0};
-        quoteState={lastDate:null,quoteIndex:null,views:0};
-        extrasTapState={titleTaps:0,gridTaps:0};
-        saveAll();
-        updateResults();
-        updateHistory();
-        updateBadges();
-        renderSavedCountdowns();
-        renderStreak();
-        updateInsights();
-        applyTheme("neon",false);
-        renderMoodUI();
-        renderQuote();
-        renderExtrasStats();
-      }
-    });
-
-    // --- Theme system ---
-    function applyTheme(theme, countChange=true){
-      themeState.currentTheme = theme;
-      if(countChange){
-        themeState.changes += 1;
-      }
-      if(!themeState.usedThemes.includes(theme)){
-        themeState.usedThemes.push(theme);
-      }
-
-      const root = document.documentElement;
-      switch(theme){
-        case "pastel":
-          root.style.setProperty("--bg-main","#f9fafb");
-          root.style.setProperty("--card-bg","rgba(249,250,251,0.95)");
-          root.style.setProperty("--card-border","rgba(148,163,184,0.5)");
-          root.style.setProperty("--accent","#fb7185");
-          root.style.setProperty("--accent-soft","#a855f7");
-          root.style.setProperty("--text-main","#111827");
-          root.style.setProperty("--text-muted","#6b7280");
-          root.style.setProperty("--chip-bg","#e5e7eb");
-          root.style.setProperty("--danger","#b91c1c");
-          break;
-        case "dark":
-          root.style.setProperty("--bg-main","#020617");
-          root.style.setProperty("--card-bg","rgba(15,23,42,0.98)");
-          root.style.setProperty("--card-border","rgba(55,65,81,0.8)");
-          root.style.setProperty("--accent","#22c55e");
-          root.style.setProperty("--accent-soft","#22d3ee");
-          root.style.setProperty("--text-main","#f9fafb");
-          root.style.setProperty("--text-muted","#9ca3af");
-          root.style.setProperty("--chip-bg","#020617");
-          root.style.setProperty("--danger","#b91c1c");
-          break;
-        case "cyberpunk":
-          root.style.setProperty("--bg-main","#05010a");
-          root.style.setProperty("--card-bg","rgba(10,10,30,0.96)");
-          root.style.setProperty("--card-border","rgba(244,114,182,0.7)");
-          root.style.setProperty("--accent","#22d3ee");
-          root.style.setProperty("--accent-soft","#f472b6");
-          root.style.setProperty("--text-main","#f9fafb");
-          root.style.setProperty("--text-muted","#a5b4fc");
-          root.style.setProperty("--chip-bg","#020617");
-          root.style.setProperty("--danger","#f97316");
-          break;
-        case "minimal":
-          root.style.setProperty("--bg-main","#ffffff");
-          root.style.setProperty("--card-bg","#f9fafb");
-          root.style.setProperty("--card-border","rgba(209,213,219,1)");
-          root.style.setProperty("--accent","#0ea5e9");
-          root.style.setProperty("--accent-soft","#6366f1");
-          root.style.setProperty("--text-main","#111827");
-          root.style.setProperty("--text-muted","#6b7280");
-          root.style.setProperty("--chip-bg","#e5e7eb");
-          root.style.setProperty("--danger","#b91c1c");
-          break;
-        default: // neon
-          root.style.setProperty("--bg-main","#050816");
-          root.style.setProperty("--card-bg","rgba(15,23,42,0.9)");
-          root.style.setProperty("--card-border","rgba(148,163,184,0.2)");
-          root.style.setProperty("--accent","#22d3ee");
-          root.style.setProperty("--accent-soft","#a855f7");
-          root.style.setProperty("--text-main","#f5f5f5");
-          root.style.setProperty("--text-muted","#9ca3af");
-          root.style.setProperty("--chip-bg","#020617");
-          root.style.setProperty("--danger","#b91c1c");
-          break;
-      }
-
-      document.querySelectorAll(".theme-btn").forEach(btn=>{
-        btn.classList.toggle("active", btn.getAttribute("data-theme")===theme);
-      });
-
-      saveAll();
-      checkThemeAchievements();
-      renderExtrasStats();
-    }
-
-    function checkThemeAchievements(){
-      if(themeState.changes >= 5){
-        unlockAchievement("themeAddict");
-      }
-      const allThemes = ["neon","pastel","dark","cyberpunk","minimal"];
-      const usedAll = allThemes.every(t=>themeState.usedThemes.includes(t));
-      if(usedAll){
-        unlockAchievement("themeExplorer");
-      }
-    }
-
-    document.querySelectorAll(".theme-btn").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        const theme = btn.getAttribute("data-theme");
-        applyTheme(theme,true);
-      });
-    });
-
-    // --- Background & App name ---
-    document.getElementById("bgColorInput").addEventListener("input",e=>{
-      document.body.style.backgroundImage="";
-      document.body.style.backgroundColor=e.target.value;
-      unlockAchievement("bgChanged");
-    });
-    document.getElementById("bgFileInput").addEventListener("change",e=>{
-      const file=e.target.files[0];
-      if(file && file.type.startsWith("image/")){
-        const reader=new FileReader();
-        reader.onload=()=>{
-          document.body.style.backgroundImage=`url(${reader.result})`;
-          document.body.style.backgroundSize="cover";
-          document.body.style.backgroundRepeat="no-repeat";
-          document.body.style.backgroundColor="";
-          unlockAchievement("bgChanged");
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    document.getElementById("changeAppNameBtn").addEventListener("click",()=>{
-      const name=document.getElementById("appNameInput").value;
-      if(name) document.getElementById("appTitle").innerText=name;
-    });
-
-    // --- Countdown ---
-    let countdownInterval;
-    const countdownDisplay = document.getElementById("countdownDisplay");
-
-    function renderSavedCountdowns(){
-      const container = document.getElementById("savedCountdowns");
-      container.innerHTML = "";
-      if(savedCountdowns.length === 0){
-        container.innerHTML = "<p style='font-size:12px;opacity:0.8;'>No saved countdowns yet.</p>";
-        return;
-      }
-      savedCountdowns.forEach((c, index)=>{
-        const div = document.createElement("div");
-        div.className = "countdown-item";
-        const label = document.createElement("span");
-        label.textContent = `${c.name} – ${c.date}`;
-        const btnWrap = document.createElement("div");
-        const startBtn = document.createElement("button");
-        startBtn.textContent = "Start";
-        startBtn.onclick = ()=> startCountdownTo(c.date, c.name);
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Delete";
-        deleteBtn.onclick = ()=>{
-          savedCountdowns.splice(index,1);
-          saveAll();
-          renderSavedCountdowns();
-        };
-        btnWrap.appendChild(startBtn);
-        btnWrap.appendChild(deleteBtn);
-        div.appendChild(label);
-        div.appendChild(btnWrap);
-        container.appendChild(div);
-      });
-    }
-
-    function startCountdownTo(dateStr, name){
-      if(!dateStr) return;
-      const target = new Date(dateStr).getTime();
-      clearInterval(countdownInterval);
-
-      countdownInterval = setInterval(()=>{
-        const now = Date.now();
-        const diff = target - now;
-
-        if(diff <= 0){
-          countdownDisplay.innerText = `${name || "Countdown"}: Time's up!`;
-          clearInterval(countdownInterval);
-          alert("Time's up!");
-          return;
-        }
-
-        const days=Math.floor(diff/(1000*60*60*24));
-        const hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-        const minutes=Math.floor((diff%(1000*60*60))/(1000*60));
-        const seconds=Math.floor((diff%(1000*60))/1000);
-
-        countdownDisplay.innerText =
-          `${name || "Countdown"}: ${days}d : ${hours}h : ${minutes}m : ${seconds}s`;
-      },1000);
-    }
-
-    document.getElementById("startCountdownBtn").addEventListener("click",()=>{
-      const dateStr=document.getElementById("countdownDate").value;
-      const name=document.getElementById("countdownName").value || "Countdown";
-      if(!dateStr) return alert("Select a date");
-      startCountdownTo(dateStr, name);
-    });
-
-    document.getElementById("saveCountdownBtn").addEventListener("click",()=>{
-      const dateStr=document.getElementById("countdownDate").value;
-      const name=document.getElementById("countdownName").value || "Countdown";
-      if(!dateStr) return alert("Select a date");
-      savedCountdowns.push({name, date:dateStr});
-      saveAll();
-      renderSavedCountdowns();
-      unlockAchievement("countdownSaved");
-      document.getElementById("countdownName").value = "";
-      document.getElementById("countdownDate").value = "";
-    });
-
-    // --- Share / backup ---
-    document.getElementById("downloadBtn").addEventListener("click",()=>{
-      const data = {dates,history,badges,savedCountdowns,streakData,themeState,moodState,quoteState,extrasTapState};
-      const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "blacklingo_data.json";
-      a.click();
-    });
-
-    document.getElementById("uploadBtn").addEventListener("click",()=>{
-      const file=document.getElementById("uploadDataInput").files[0];
-      if(!file) return alert("Select a file");
-      const reader=new FileReader();
-      reader.onload=function(e){
-        try{
-          const data=JSON.parse(e.target.result);
-          dates=data.dates||[];
-          history=data.history||[];
-          badges=data.badges||[];
-          savedCountdowns=data.savedCountdowns||[];
-          streakData=data.streakData||streakData;
-          themeState=data.themeState||themeState;
-          moodState=data.moodState||moodState;
-          quoteState=data.quoteState||quoteState;
-          extrasTapState=data.extrasTapState||extrasTapState;
-          saveAll();
-          updateResults();
-          updateHistory();
-          updateBadges();
-          renderSavedCountdowns();
-          renderStreak();
-          updateInsights();
-          applyTheme(themeState.currentTheme || "neon", false);
-          renderMoodUI();
-          renderQuote();
-          renderExtrasStats();
-          alert("Data loaded!");
-        }catch(err){alert("Invalid file");}
-      };
-      reader.readAsText(file);
-    });
-
-    function shareApp(){
-      const shareData = {
-        title: 'Blacklingo',
-        text: 'Check out my Blacklingo app! Track dates, moods, countdowns, and unlock neon achievements.',
-        url: window.location.href
-      };
-      if (navigator.share) {
-        navigator.share(shareData)
-          .then(() => {
-            unlockAchievement("sharedApp");
-          })
-          .catch(() => {});
-      } else {
-        const dummy = document.createElement('input');
-        document.body.appendChild(dummy);
-        dummy.value = shareData.url;
-        dummy.select();
-        document.execCommand('copy');
-        document.body.removeChild(dummy);
-        alert('Share link copied to clipboard!');
-        unlockAchievement("sharedApp");
-      }
-    }
-
-    // --- Daily quote system ---
-    function todayDateString(){
-      return new Date().toISOString().slice(0,10);
-    }
-
-    function renderQuote(){
-      const quoteTextEl = document.getElementById("dailyQuoteText");
-      const quoteAuthorEl = document.getElementById("dailyQuoteAuthor");
-      const today = todayDateString();
-
-      if(quoteState.lastDate !== today || quoteState.quoteIndex == null){
-        const idx = Math.floor(Math.random()*QUOTES.length);
-        quoteState.lastDate = today;
-        quoteState.quoteIndex = idx;
-        saveAll();
-      }
-
-      const q = QUOTES[quoteState.quoteIndex] || QUOTES[0];
-      quoteTextEl.textContent = `"${q.text}"`;
-      quoteAuthorEl.textContent = q.author ? `— ${q.author}` : "";
-    }
-
-    function incrementQuoteViews(){
-      quoteState.views = (quoteState.views || 0) + 1;
-      saveAll();
-      renderExtrasStats();
-      if(quoteState.views >= 5){
-        unlockAchievement("quoteCollector");
-      }
-    }
-
-    // --- Mood system ---
-    function renderMoodUI(){
-      const label = document.getElementById("currentMoodLabel");
-      label.textContent = "Current mood: " + (moodState.currentMood || "None");
-      document.querySelectorAll(".mood-btn").forEach(btn=>{
-        const m = btn.getAttribute("data-mood");
-        btn.classList.toggle("active", m === moodState.currentMood);
-      });
-      renderExtrasStats();
-    }
-
-    document.querySelectorAll(".mood-btn").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        const mood = btn.getAttribute("data-mood");
-        if(moodState.currentMood !== mood){
-          moodState.currentMood = mood;
-          moodState.moodChanges = (moodState.moodChanges || 0) + 1;
-          if(!moodState.usedMoods.includes(mood)){
-            moodState.usedMoods.push(mood);
-          }
-          saveAll();
-          renderMoodUI();
-          if(moodState.usedMoods.length >= 3){
-            unlockAchievement("moodMaster");
-          }
-        }
-      });
-    });
-
-    // --- Secret console / Easter eggs ---
-    document.getElementById("secretCodeBtn").addEventListener("click",()=>{
-      const input = document.getElementById("secretCodeInput");
-      const result = document.getElementById("secretCodeResult");
-      const code = (input.value || "").trim().toUpperCase();
-      if(!code){
-        result.textContent = "Enter a code first.";
-        return;
-      }
-
-      if(code === "BLACKLINGO"){
-        result.textContent = "Secret accepted. You’ve found something special.";
-        unlockAchievement("secretFinder");
-      } else if(code === "NEON"){
-        result.textContent = "Neon mode already active. But nice try.";
-      } else if(code === "GLITCH"){
-        result.textContent = "Glitch vibes acknowledged.";
-        unlockAchievement("mysteryTapper");
-      } else {
-        result.textContent = "Unknown code. Try again.";
-      }
-      input.value = "";
-    });
-
-    // Extras title taps
-    const extrasTitle = document.getElementById("extrasTitle");
-    extrasTitle.addEventListener("click",()=>{
-      extrasTapState.titleTaps = (extrasTapState.titleTaps || 0) + 1;
-      if(extrasTapState.titleTaps === 7){
-        unlockAchievement("mysteryTapper");
-      }
-      saveAll();
-    });
-
-    // Extras grid taps
-    const extrasBg = document.getElementById("extrasGridBg");
-    extrasBg.addEventListener("click",()=>{
-      extrasTapState.gridTaps = (extrasTapState.gridTaps || 0) + 1;
-      if(extrasTapState.gridTaps === 10){
-        unlockAchievement("secretFinder");
-      }
-      saveAll();
-    });
-
-    // Quote card click = view
-    document.getElementById("extrasQuoteCard").addEventListener("click",()=>{
-      incrementQuoteViews();
-    });
-
-    // --- Extras stats ---
-    function renderExtrasStats(){
-      const themeChangesStat = document.getElementById("themeChangesStat");
-      const themeUsedStat = document.getElementById("themeUsedStat");
-      const moodUsedStat = document.getElementById("moodUsedStat");
-      const quotesViewedStat = document.getElementById("quotesViewedStat");
-
-      themeChangesStat.textContent = `Theme changes: ${themeState.changes || 0}`;
-      themeUsedStat.textContent = `Themes used: ${themeState.usedThemes && themeState.usedThemes.length ? themeState.usedThemes.join(", ") : "–"}`;
-      moodUsedStat.textContent = `Moods used: ${moodState.usedMoods && moodState.usedMoods.length ? moodState.usedMoods.join(", ") : "–"}`;
-      quotesViewedStat.textContent = `Quotes viewed: ${quoteState.views || 0}`;
-    }
-
-    // --- Service worker ---
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js")
-        .then(() => console.log("Service Worker registered"))
-        .catch((err) => console.log("SW error:", err));
-    }
-
-    // --- App title taps (extra Easter egg hook) ---
-    let appTitleTapCount = 0;
-    document.getElementById("appTitle").addEventListener("click",()=>{
-      appTitleTapCount++;
-      if(appTitleTapCount === 7){
-        unlockAchievement("mysteryTapper");
-      }
-    });
-
-    // --- Initial render ---
-    applyTheme(themeState.currentTheme || "neon", false);
-    updateResults();
-    updateHistory();
-    updateBadges();
-    renderSavedCountdowns();
-    renderStreak();
-    updateInsights();
-    renderMoodUI();
-    renderQuote();
-    renderExtrasStats();
-    updateStreak(); // count first open today
-  </script>
-</body>
-</html>
-
-
-
-
+        const name=document.createElement("
